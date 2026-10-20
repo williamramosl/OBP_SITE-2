@@ -16,7 +16,7 @@ const isCurrent = (href: string) => current.startsWith(href);
 <header class:list={['gnav', { 'gnav--static': !sticky }]} data-gnav>
   <nav class="gnav__bar" aria-label="Navegação principal">
     <a href="/" class="gnav__logo" aria-label="Office Brasil Print, página inicial">
-      <Logo class="gnav__logo-svg" />
+      <Logo variant="selo" class="gnav__logo-svg" />
     </a>
 
     <ul class="gnav__links">
@@ -160,7 +160,7 @@ const isCurrent = (href: string) => current.startsWith(href);
   }
 
   .gnav__logo :global(.gnav__logo-svg) {
-    height: 32px;
+    height: 58px;
     width: auto;
   }
 
@@ -329,7 +329,7 @@ const isCurrent = (href: string) => current.startsWith(href);
     }
 
     .gnav__logo :global(.gnav__logo-svg) {
-      height: 28px;
+      height: 50px;
     }
 
     .gnav__toggle {

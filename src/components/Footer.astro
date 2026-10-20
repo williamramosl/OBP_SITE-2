@@ -63,7 +63,7 @@ const columns = [
 
     <div class="gfoot__bottom">
       <a href="/" class="gfoot__logo" aria-label="Office Brasil Print, página inicial">
-        <Logo variant="mono" />
+        <Logo variant="selo" />
       </a>
       <p class="gfoot__legal">
         Copyright © {year} {company.name}. Todos os direitos reservados.<span class="gfoot__sep" aria-hidden="true">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
@@ -134,8 +134,13 @@ const columns = [
 
   .gfoot__logo {
     display: block;
-    width: 44px;
-    color: var(--ink-3) !important;
+    flex: none;
+  }
+
+  .gfoot__logo :global(svg) {
+    display: block;
+    height: 44px;
+    width: auto;
   }
 
   .gfoot__legal {
