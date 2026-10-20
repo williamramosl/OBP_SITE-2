@@ -1,0 +1,26 @@
+---
+// Linha de chamado usada na lista e no histórico do painel (preenchida por lib/portal/linhas.ts).
+import { ChevronRight } from '@lucide/astro';
+---
+
+<template id="tpl-linha-chamado">
+  <li>
+    <a class="p-row" data-link>
+      <span class="p-row__id" data-campo="protocolo"></span>
+      <span class="p-row__main">
+        <span class="p-chip p-chip--sm" data-icone-problema></span>
+        <span class="p-row__text">
+          <span class="p-row__title" data-campo="titulo"></span>
+          <span class="p-row__muted" data-campo="descricao"></span>
+        </span>
+      </span>
+      <span class="p-row__eq">
+        <span class="p-row__strong" data-campo="equipamento"></span>
+        <span class="p-row__muted" data-campo="local"></span>
+      </span>
+      <span class="p-row__date" data-campo="data"></span>
+      <span class="p-row__status"><span class="status" data-status-pill></span></span>
+      <ChevronRight class="p-row__chevron" aria-hidden="true" />
+    </a>
+  </li>
+</template>

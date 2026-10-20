@@ -1,0 +1,738 @@
+---
+import { Barcode, CalendarClock, ChartColumn, CircleAlert, CircleCheckBig, Copy, FileText, Inbox, ReceiptText } from '@lucide/astro';
+import Portal from '../../../layouts/Portal.astro';
+import { demoCliente } from '../../../data/portal';
+
+const filtros = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'abertas', label: 'Em aberto' },
+  { id: 'vencidas', label: 'Vencidas' },
+  { id: 'pagas', label: 'Pagas' },
+];
+---
+
+<Portal
+  title="Faturas"
+  heading="Faturas"
+  subheading={`Boletos e notas fiscais da ${demoCliente.empresa}.`}
+  active="faturas"
+>
+  <div class="p-banner p-banner--error fat-alerta" role="alert" hidden data-alerta>
+    <CircleAlert aria-hidden="true" />
+    <p><span data-alerta-texto></span> <a data-alerta-link>Ver fatura</a></p>
+  </div>
+
+  <div class="fat-top">
+    <section class="p-card p-card--dark proxima" aria-labelledby="proxima-titulo">
+      <div class="p-card__head">
+        <h2 id="proxima-titulo" class="p-card__title" data-proxima-titulo>Próxima fatura</h2>
+        <span class="status" data-proxima-status></span>
+      </div>
+
+      <div class="proxima__conteudo" data-proxima>
+        <p class="proxima__ref" data-campo="referencia"></p>
+        <p class="proxima__valor" data-campo="valor">–</p>
+        <p class="proxima__vence">
+          <CalendarClock aria-hidden="true" />
+          <span data-campo="vence"></span>
+        </p>
+        <div class="proxima__acoes">
+          <button class="btn btn--light btn--sm" type="button" data-copiar>
+            <Copy aria-hidden="true" />
+            Copiar código
+          </button>
+          <a class="btn btn--sm proxima__ver" data-proxima-link>Ver fatura</a>
+        </div>
+      </div>
+
+      <div class="proxima__vazio" hidden data-proxima-vazio>
+        <CircleCheckBig aria-hidden="true" />
+        <strong>Tudo em dia</strong>
+        <span>Nenhuma fatura em aberto no momento.</span>
+      </div>
+    </section>
+
+    <section class="p-card barras-card" aria-labelledby="barras-titulo">
+      <div class="p-card__head">
+        <div>
+          <h2 id="barras-titulo" class="p-card__title">Últimos 12 meses</h2>
+          <p class="p-card__sub">Valor das faturas mensais</p>
+        </div>
+        <ChartColumn aria-hidden="true" stroke-width={1.75} />
+      </div>
+      <ol class="barras" data-barras></ol>
+    </section>
+
+    <section class="p-card ano" aria-labelledby="ano-titulo">
+      <div class="p-card__head">
+        <h2 id="ano-titulo" class="p-card__title">Resumo</h2>
+        <ReceiptText aria-hidden="true" stroke-width={1.75} />
+      </div>
+      <dl class="ano__lista">
+        <div>
+          <dt data-ano-rotulo>Pago no ano</dt>
+          <dd data-metrica="pagoNoAno">–</dd>
+        </div>
+        <div>
+          <dt>Em aberto</dt>
+          <dd data-metrica="emAberto">–</dd>
+        </div>
+        <div>
+          <dt>Média mensal</dt>
+          <dd data-metrica="mediaMensal">–</dd>
+        </div>
+        <div>
+          <dt>Impressões em 12 meses</dt>
+          <dd data-metrica="paginas">–</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="p-card fat-lista" aria-labelledby="lista-titulo">
+    <div class="fat-lista__head">
+      <h2 id="lista-titulo" class="p-card__title">Histórico de faturas</h2>
+      <div class="segmented" role="group" aria-label="Filtrar faturas">
+        {filtros.map((f, i) => (
+          <button type="button" data-filtro={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {f.label}
+            <span class="segmented__count" data-conta={f.id}></span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div class="f-head" aria-hidden="true">
+      <span></span><span>Fatura</span><span>Vencimento</span><span>Valor</span><span>Status</span><span>Documentos</span>
+    </div>
+    <ul class="f-lista" data-lista></ul>
+
+    <div class="p-empty" hidden data-vazio>
+      <Inbox aria-hidden="true" />
+      <strong>Nenhuma fatura neste filtro</strong>
+    </div>
+  </section>
+
+  <template id="tpl-fatura">
+    <li class="f-row">
+      <span class="p-chip p-chip--sm"><ReceiptText aria-hidden="true" stroke-width={1.75} /></span>
+      <span class="f-row__main">
+        <a class="f-row__link" data-link><span data-campo="titulo"></span></a>
+        <span class="f-row__muted" data-campo="numero"></span>
+      </span>
+      <span class="f-row__venc">
+        <span data-campo="vencimento"></span>
+        <span class="f-row__muted" data-campo="prazo"></span>
+      </span>
+      <span class="f-row__valor" data-campo="valor"></span>
+      <span class="f-row__status"><span class="status" data-status-pill></span></span>
+      <span class="f-row__acoes">
+        <button class="f-acao" type="button" data-baixar="boleto">
+          <Barcode aria-hidden="true" stroke-width={1.75} />
+          <span class="visually-hidden" data-campo="rotuloBoleto"></span>
+        </button>
+        <button class="f-acao" type="button" data-baixar="nota">
+          <FileText aria-hidden="true" stroke-width={1.75} />
+          <span class="visually-hidden" data-campo="rotuloNota"></span>
+        </button>
+      </span>
+    </li>
+  </template>
+</Portal>
+
+<script>
+  import {
+    codigoParaCopiar,
+    faturaEmDestaque,
+    listarFaturas,
+    prazoFatura as prazo,
+    resumirFaturas,
+    statusDaFatura,
+    tituloFatura as titulo,
+    type Fatura,
+  } from '../../../lib/portal/faturas';
+  import { aplicarSelo, avisar, clonar, copiarTexto, preencher } from '../../../lib/portal/dom';
+  import { dataDoDia, formatarCompetencia, formatarDia, formatarMoeda, formatarNumero, mesCurto } from '../../../lib/portal/formato';
+  import { faturaStatusInfo, portalRoutes, type FaturaStatus } from '../../../data/portal';
+
+  type Filtro = 'todas' | 'abertas' | 'vencidas' | 'pagas';
+  const passa: Record<Filtro, (s: FaturaStatus) => boolean> = {
+    todas: () => true,
+    abertas: (s) => s !== 'paga',
+    vencidas: (s) => s === 'vencida',
+    pagas: (s) => s === 'paga',
+  };
+
+  const demonstracao = () => avisar('Na demonstração os PDFs ainda não estão disponíveis.');
+
+  function montarLinha(f: Fatura) {
+    const item = clonar('tpl-fatura');
+    const status = statusDaFatura(f);
+    item.querySelector('[data-link]')?.setAttribute('href', portalRoutes.fatura(f.id));
+    aplicarSelo(item.querySelector('[data-status-pill]'), status, faturaStatusInfo[status].label);
+    preencher(item, {
+      titulo: titulo(f),
+      numero: f.tipo === 'avulsa' ? `Avulsa · nº ${f.id}` : `Nº ${f.id} · NFS-e ${f.notaFiscal}`,
+      vencimento: formatarDia(f.vencimento),
+      prazo: prazo(f),
+      valor: formatarMoeda(f.valor),
+      rotuloBoleto: `Baixar boleto de ${titulo(f)}`,
+      rotuloNota: `Baixar nota fiscal de ${titulo(f)}`,
+    });
+    item.querySelectorAll<HTMLButtonElement>('[data-baixar]').forEach((b) => {
+      b.title = b.dataset.baixar === 'boleto' ? 'Baixar boleto' : 'Baixar nota fiscal';
+      // TODO(supabase): gerar link temporário do PDF e abrir.
+      b.addEventListener('click', demonstracao);
+    });
+    return item;
+  }
+
+  function montarBarras(meses: { id: string; competencia: string; valor: number }[]) {
+    const max = Math.max(1, ...meses.map((m) => m.valor));
+    document.querySelector('[data-barras]')?.replaceChildren(
+      ...meses.map((m, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'barra';
+        a.href = portalRoutes.fatura(m.id);
+        a.style.setProperty('--h', `${(m.valor / max) * 100}%`);
+        a.setAttribute('aria-label', `${formatarCompetencia(m.competencia)}: ${formatarMoeda(m.valor)}`);
+        const dica = document.createElement('span');
+        dica.className = 'barra__dica';
+        dica.textContent = formatarMoeda(m.valor);
+        a.append(dica);
+        const mes = document.createElement('span');
+        mes.className = 'barra__mes';
+        mes.textContent = mesCurto(dataDoDia(`${m.competencia}-01`)).slice(0, 3);
+        li.append(a, mes);
+        if (i === meses.length - 1) li.classList.add('is-atual');
+        return li;
+      }),
+    );
+  }
+
+  async function iniciar() {
+    const faturas = await listarFaturas();
+    const r = resumirFaturas(faturas);
+    const destaque = faturaEmDestaque(faturas);
+
+    // Cartão escuro: a fatura que pede atenção
+    const conteudo = document.querySelector<HTMLElement>('[data-proxima]')!;
+    const vazio = document.querySelector<HTMLElement>('[data-proxima-vazio]')!;
+    const selo = document.querySelector('[data-proxima-status]');
+    if (destaque) {
+      const status = statusDaFatura(destaque);
+      document.querySelector('[data-proxima-titulo]')!.textContent = status === 'vencida' ? 'Fatura vencida' : 'Próxima fatura';
+      aplicarSelo(selo, status, faturaStatusInfo[status].label);
+      preencher(conteudo, {
+        referencia: titulo(destaque),
+        valor: formatarMoeda(destaque.valor),
+        vence: `${formatarDia(destaque.vencimento)} · ${prazo(destaque).toLowerCase()}`,
+      });
+      document.querySelector('[data-proxima-link]')?.setAttribute('href', portalRoutes.fatura(destaque.id));
+      document.querySelector('[data-copiar]')?.addEventListener('click', async () => {
+        const ok = await copiarTexto(codigoParaCopiar(destaque));
+        avisar(ok ? 'Código do boleto copiado.' : 'Não foi possível copiar. Abra a fatura para ver o código.');
+      });
+    } else {
+      conteudo.hidden = true;
+      vazio.hidden = false;
+      selo?.remove();
+    }
+
+    // Aviso de faturas vencidas
+    if (r.vencidas.length) {
+      const alerta = document.querySelector<HTMLElement>('[data-alerta]')!;
+      const maisAntiga = r.vencidas.sort((a, b) => a.vencimento.localeCompare(b.vencimento))[0];
+      document.querySelector('[data-alerta-texto]')!.textContent =
+        r.vencidas.length === 1
+          ? `A fatura "${titulo(maisAntiga)}" venceu em ${formatarDia(maisAntiga.vencimento)}.`
+          : `Você tem ${r.vencidas.length} faturas vencidas.`;
+      document.querySelector('[data-alerta-link]')?.setAttribute('href', portalRoutes.fatura(maisAntiga.id));
+      alerta.hidden = false;
+    }
+
+    // Resumo
+    document.querySelector('[data-ano-rotulo]')!.textContent = `Pago em ${new Date().getFullYear()}`;
+    const metricas: Record<string, string> = {
+      pagoNoAno: formatarMoeda(r.pagoNoAno),
+      emAberto: formatarMoeda(r.emAberto),
+      mediaMensal: formatarMoeda(r.mediaMensal),
+      paginas: `${formatarNumero(r.paginas12Meses)} páginas`,
+    };
+    for (const [nome, valor] of Object.entries(metricas)) {
+      const el = document.querySelector(`[data-metrica="${nome}"]`);
+      if (el) el.textContent = valor;
+    }
+    document.querySelector('[data-metrica="emAberto"]')?.classList.toggle('is-alerta', r.vencidas.length > 0);
+
+    montarBarras(r.ultimos12);
+
+    // Lista com filtros
+    const botoes = [...document.querySelectorAll<HTMLButtonElement>('[data-filtro]')];
+    const lista = document.querySelector('[data-lista]');
+    const vazioLista = document.querySelector<HTMLElement>('[data-vazio]')!;
+    let filtro: Filtro = 'todas';
+
+    const render = () => {
+      const visiveis = faturas.filter((f) => passa[filtro](statusDaFatura(f)));
+      lista?.replaceChildren(...visiveis.map(montarLinha));
+      vazioLista.hidden = visiveis.length > 0;
+      botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filtro === filtro)));
+    };
+
+    for (const botao of botoes) {
+      const id = botao.dataset.filtro as Filtro;
+      const total = faturas.filter((f) => passa[id](statusDaFatura(f))).length;
+      botao.querySelector('[data-conta]')!.textContent = String(total);
+      if (id === 'vencidas') botao.hidden = total === 0;
+      botao.addEventListener('click', () => {
+        filtro = id;
+        render();
+      });
+    }
+    render();
+  }
+
+  iniciar();
+</script>
+
+<style>
+  .fat-alerta {
+    margin-bottom: 1.25rem;
+  }
+
+  .fat-alerta a {
+    font-weight: 600;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .fat-top {
+    display: grid;
+    grid-template-columns: minmax(0, 4.4fr) minmax(0, 4.6fr) minmax(0, 3.2fr);
+    gap: 1.25rem;
+  }
+
+  /* Próxima fatura (cartão escuro) */
+  .proxima {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .proxima__conteudo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .proxima__conteudo[hidden] {
+    display: none;
+  }
+
+  .proxima__ref {
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    color: #a1a8bd;
+  }
+
+  .proxima__valor {
+    margin-top: 0.125rem;
+    font-size: clamp(2.25rem, 1.8rem + 1.4vw, 3rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .proxima__vence {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+    color: #c9cfdf;
+  }
+
+  .proxima__vence :global(svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: #a9d2ff;
+  }
+
+  .proxima__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+
+  .proxima__ver {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35);
+  }
+
+  .proxima__ver:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .proxima__vazio {
+    display: grid;
+    flex: 1;
+    place-content: center;
+    justify-items: center;
+    gap: 0.25rem;
+    padding-block: 1.5rem;
+    text-align: center;
+    color: #a1a8bd;
+  }
+
+  .proxima__vazio[hidden] {
+    display: none;
+  }
+
+  .proxima__vazio strong {
+    font-size: 1.25rem;
+    color: var(--white);
+  }
+
+  .proxima__vazio :global(svg) {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.5rem;
+    color: #6ee7a0;
+  }
+
+  /* Barras dos últimos 12 meses */
+  .barras-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .barras {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 0.375rem;
+    min-height: 170px;
+    margin-top: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .barras :global(li) {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    height: 100%;
+    gap: 0.5rem;
+  }
+
+  .barras :global(.barra) {
+    position: relative;
+    align-self: end;
+    height: var(--h);
+    min-height: 6px;
+    border-radius: 8px;
+    background: #d9e3f5;
+    transition: background-color 0.2s ease;
+  }
+
+  .barras :global(.is-atual .barra) {
+    background: var(--navy);
+  }
+
+  .barras :global(.barra:hover),
+  .barras :global(.barra:focus-visible) {
+    background: var(--obp-blue-bright);
+  }
+
+  .barras :global(.barra__dica) {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    z-index: 2;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    background: var(--navy);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--white);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 4px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .barras :global(li:last-child .barra__dica) {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+  }
+
+  .barras :global(.barra:hover .barra__dica),
+  .barras :global(.barra:focus-visible .barra__dica) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .barras :global(li:last-child .barra:hover .barra__dica),
+  .barras :global(li:last-child .barra:focus-visible .barra__dica) {
+    transform: none;
+  }
+
+  .barras :global(.barra__mes) {
+    font-size: 0.6875rem;
+    color: var(--ink-3);
+    text-align: center;
+  }
+
+  .barras :global(.is-atual .barra__mes) {
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  /* Resumo do ano */
+  .ano__lista {
+    display: grid;
+    margin-top: 0.75rem;
+  }
+
+  .ano__lista div {
+    display: grid;
+    gap: 0.125rem;
+    padding-block: 0.75rem;
+  }
+
+  .ano__lista div + div {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .ano__lista dt {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .ano__lista dd {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ano__lista dd.is-alerta {
+    color: #c0262d;
+  }
+
+  /* Lista */
+  .fat-lista {
+    margin-top: 1.25rem;
+  }
+
+  .fat-lista__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .f-head,
+  .f-lista :global(.f-row) {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1.6fr) minmax(0, 1fr) 120px 110px 92px;
+    align-items: center;
+    gap: 1rem;
+    padding-inline: 0.75rem;
+  }
+
+  .f-head {
+    padding-block: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .f-head span:nth-child(4) {
+    text-align: right;
+  }
+
+  .f-lista {
+    padding: 0;
+    list-style: none;
+  }
+
+  .f-lista :global(.f-row) {
+    position: relative;
+    padding-block: 0.875rem;
+    border-radius: 14px;
+    transition: background-color 0.2s ease;
+  }
+
+  .f-lista :global(.f-row + .f-row) {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .f-lista :global(.f-row:hover) {
+    background: #f5f7fb;
+  }
+
+  .f-lista :global(.f-row__main),
+  .f-lista :global(.f-row__venc) {
+    display: grid;
+    min-width: 0;
+  }
+
+  .f-lista :global(.f-row__link) {
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* A linha inteira abre a fatura; os botões de documento ficam por cima */
+  .f-lista :global(.f-row__link::after) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .f-lista :global(.f-row__link:focus-visible) {
+    outline: none;
+  }
+
+  .f-lista :global(.f-row:has(.f-row__link:focus-visible)) {
+    outline: 2px solid var(--obp-blue-bright);
+    outline-offset: 2px;
+  }
+
+  .f-lista :global(.f-row__muted) {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .f-lista :global(.f-row__venc) {
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .f-lista :global(.f-row__valor) {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .f-lista :global(.f-row__acoes) {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.375rem;
+  }
+
+  .f-lista :global(.f-acao) {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink-2);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .f-lista :global(.f-acao:hover) {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .f-lista :global(.f-acao svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  @media (max-width: 1279px) {
+    .fat-top {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proxima {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .f-head {
+      display: none;
+    }
+
+    /* Cada fatura vira um cartão: título e valor em cima; vencimento, status e documentos embaixo */
+    .f-lista :global(.f-row) {
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      grid-template-areas:
+        'icone main valor'
+        'icone venc status'
+        'icone acoes acoes';
+      gap: 0.5rem 0.75rem;
+      padding-inline: 0.5rem;
+    }
+
+    .f-lista :global(.f-row > .p-chip) {
+      grid-area: icone;
+      align-self: start;
+    }
+
+    .f-lista :global(.f-row__main) {
+      grid-area: main;
+    }
+
+    .f-lista :global(.f-row__valor) {
+      grid-area: valor;
+    }
+
+    .f-lista :global(.f-row__venc) {
+      grid-area: venc;
+      font-size: 0.8125rem;
+    }
+
+    .f-lista :global(.f-row__status) {
+      grid-area: status;
+      justify-self: end;
+    }
+
+    .f-lista :global(.f-row__acoes) {
+      grid-area: acoes;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .fat-top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fat-lista__head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

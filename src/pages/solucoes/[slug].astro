@@ -1,0 +1,291 @@
+---
+import { Image } from 'astro:assets';
+import { Check, ChevronRight } from '@lucide/astro';
+import Base from '../../layouts/Base.astro';
+import SubNav from '../../components/SubNav.astro';
+import PageHero from '../../components/PageHero.astro';
+import FeatureGrid from '../../components/FeatureGrid.astro';
+import PrintDashboard from '../../components/PrintDashboard.astro';
+import SocialIcon from '../../components/SocialIcon.astro';
+import FinalCta from '../../components/sections/FinalCta.astro';
+import { company } from '../../data/site';
+import { proposalHref, solutionHref, solutions, type Solution } from '../../data/solutions';
+
+export function getStaticPaths() {
+  return solutions.map((solution) => ({ params: { slug: solution.slug }, props: { solution } }));
+}
+
+interface Props {
+  solution: Solution;
+}
+
+const { solution: s } = Astro.props;
+const others = solutions.filter((o) => o.slug !== s.slug);
+const dark = s.theme !== 'light';
+---
+
+<Base title={`${s.name} | Office Brasil Print`} description={s.intro} stickyNav={false}>
+  <SubNav
+    title={s.name}
+    shortTitle={s.short}
+    links={[
+      { label: 'Visão geral', href: '#visao-geral' },
+      { label: 'Benefícios', href: '#beneficios' },
+      { label: 'O que está incluso', href: '#incluso' },
+    ]}
+    cta={{ label: 'Solicitar proposta', href: proposalHref(s.slug) }}
+  />
+
+  <PageHero id="visao-geral" eyebrow={s.name} title={s.tagline} lead={s.intro} theme={dark ? 'dark' : 'light'}>
+    <Fragment slot="actions">
+      <a class:list={['btn', { 'btn--light': dark }]} href={proposalHref(s.slug)}>Solicitar proposta</a>
+      <a class="link" href={company.whatsappHref} target="_blank" rel="noopener">
+        Falar no WhatsApp <ChevronRight aria-hidden="true" />
+      </a>
+    </Fragment>
+    <div slot="media" class="container sol-visual" data-theme={s.theme}>
+      {'image' in s.visual ? (
+        <Image
+          src={s.visual.image}
+          alt={s.visual.alt}
+          widths={[640, 960, 1280, 1600]}
+          sizes="(max-width: 1128px) 100vw, 1080px"
+          loading="eager"
+          class="sol-visual__img"
+          style={`object-position: ${s.visual.position ?? '50% 50%'}`}
+        />
+      ) : (
+        <div class="sol-visual__dash" data-reveal>
+          <PrintDashboard />
+        </div>
+      )}
+    </div>
+  </PageHero>
+
+  <section class="section statement" aria-labelledby="statement-title">
+    <div class="statement__grid container" data-reveal>
+      <h2 id="statement-title" class="headline">{s.statement.title}</h2>
+      <p class="statement__text">{s.statement.text}</p>
+    </div>
+  </section>
+
+  <section id="beneficios" class="section section--mist" aria-labelledby="benefits-title">
+    <div class="container">
+      <header class="section-head" data-reveal>
+        <p class="eyebrow">Benefícios</p>
+        <h2 id="benefits-title" class="headline">{s.benefitsTitle}</h2>
+      </header>
+      <div class="benefits">
+        <FeatureGrid items={s.benefits} />
+      </div>
+    </div>
+  </section>
+
+  <section id="incluso" class="section section--dark" aria-labelledby="included-title">
+    <div class="included container">
+      <div class="included__head" data-reveal>
+        <p class="eyebrow">O que está incluso</p>
+        <h2 id="included-title" class="headline">{s.includedTitle}</h2>
+        <div class="actions included__actions">
+          <a class="btn btn--light" href={proposalHref(s.slug)}>Solicitar proposta</a>
+          <a class="link" href={company.whatsappHref} target="_blank" rel="noopener">
+            <SocialIcon name="whatsapp" size={16} />&nbsp;WhatsApp <ChevronRight aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+      <ul class="included__list" data-reveal>
+        {s.included.map((item) => (
+          <li>
+            <Check class="included__check" aria-hidden="true" stroke-width={2.25} />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section others" aria-labelledby="others-title">
+    <div class="container">
+      <header class="section-head" data-reveal>
+        <p class="eyebrow">Conheça também</p>
+        <h2 id="others-title" class="headline">Soluções que funcionam ainda melhor juntas.</h2>
+      </header>
+      <ul class="others__list">
+        {others.map((o, i) => (
+          <li data-reveal style={`--reveal-delay: ${i * 0.07}s`}>
+            <a class="other" href={solutionHref(o.slug)}>
+              <o.icon class="other__icon" aria-hidden="true" stroke-width={1.5} />
+              <h3 class="other__name">{o.name}</h3>
+              <p class="other__tagline">{o.tagline}</p>
+              <span class="link other__more">
+                Saiba mais <ChevronRight aria-hidden="true" />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <FinalCta />
+</Base>
+
+<style>
+  /* Visual do topo */
+  .sol-visual {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .sol-visual :global(.sol-visual__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sol-visual:has(.sol-visual__dash) {
+    aspect-ratio: auto;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+  }
+
+  .sol-visual__dash {
+    width: min(100%, 560px);
+    display: flex;
+    justify-content: center;
+  }
+
+  .sol-visual__dash :global(.dash) {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  /* Declaração */
+  .statement__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+  }
+
+  .statement__text {
+    font-size: clamp(1.3125rem, 1.1rem + 0.8vw, 1.75rem);
+    line-height: 1.35;
+    letter-spacing: -0.018em;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Benefícios */
+  .benefits {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  /* O que está incluso */
+  .included {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: start;
+  }
+
+  .included__head .headline {
+    margin-top: 0.75rem;
+  }
+
+  .included__actions {
+    justify-content: flex-start;
+    margin-top: 2rem;
+  }
+
+  .included__list {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+  }
+
+  .included__list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1.125rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+    font-size: 1.1875rem;
+    letter-spacing: -0.015em;
+  }
+
+  .included :global(.included__check) {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    color: var(--link-on-dark);
+  }
+
+  /* Outras soluções */
+  .others__list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .other {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem;
+    border-radius: var(--radius-md);
+    background: var(--obp-mist);
+    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+  }
+
+  .other:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -24px rgb(8 53 155 / 0.35);
+  }
+
+  .other :global(.other__icon) {
+    width: 32px;
+    height: 32px;
+    color: var(--obp-blue);
+  }
+
+  .other__name {
+    margin-top: 1.25rem;
+    font-size: 1.3125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .other__tagline {
+    margin-top: 0.375rem;
+    color: var(--ink-2);
+    flex: 1;
+  }
+
+  .other__more {
+    margin-top: 1rem;
+    min-height: 0;
+  }
+
+  @media (max-width: 833px) {
+    .sol-visual {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+    }
+
+    .statement__grid,
+    .included {
+      grid-template-columns: 1fr;
+    }
+
+    .others__list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

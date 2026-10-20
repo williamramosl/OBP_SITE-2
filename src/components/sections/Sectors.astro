@@ -1,0 +1,137 @@
+---
+import { Image } from 'astro:assets';
+import { BriefcaseBusiness, Building, Factory, GraduationCap, Hospital } from '@lucide/astro';
+import gavetasImg from '../../assets/img/gavetas.jpeg';
+
+const sectors = [
+  { icon: Factory, title: 'Indústrias', text: 'Alto volume, turnos contínuos e zero tempo parado.' },
+  { icon: Hospital, title: 'Hospitais e clínicas', text: 'Prontuários, laudos e etiquetas sempre disponíveis.' },
+  { icon: Building, title: 'Administradoras de condomínios', text: 'Boletos, circulares e atas de assembleia sempre em dia.' },
+  { icon: GraduationCap, title: 'Instituições de ensino', text: 'Provas, apostilas e material didático entregues no prazo.' },
+  { icon: BriefcaseBusiness, title: 'Empresas de todos os portes', text: 'Do escritório pequeno à grande corporação.' },
+];
+---
+
+<section id="setores" class="section section--mist sectors" aria-labelledby="sectors-title">
+  <div class="sectors__grid container">
+    <div class="sectors__media" data-reveal>
+      <Image
+        src={gavetasImg}
+        alt="Detalhe das gavetas de papel numeradas de uma impressora corporativa"
+        widths={[480, 720, 960, 1200]}
+        sizes="(max-width: 833px) 100vw, 520px"
+        class="sectors__img"
+      />
+    </div>
+
+    <div class="sectors__copy">
+      <div data-reveal>
+        <p class="eyebrow">Setores atendidos</p>
+        <h2 id="sectors-title" class="headline sectors__headline">Feito para quem não pode parar.</h2>
+        <p class="lead sectors__lead">
+          Há mais de duas décadas atendemos indústrias, hospitais, condomínios, instituições de ensino e empresas
+          de todos os portes com o mesmo nível de exigência.
+        </p>
+      </div>
+
+      <ul class="sectors__list">
+        {sectors.map((s, i) => (
+          <li class="sectors__item" data-reveal style={`--reveal-delay: ${i * 0.06}s`}>
+            <span class="sectors__icon">
+              <s.icon aria-hidden="true" stroke-width={1.5} />
+            </span>
+            <div>
+              <h3 class="sectors__title">{s.title}</h3>
+              <p class="sectors__text">{s.text}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sectors__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    gap: clamp(2.5rem, 6vw, 5.5rem);
+    align-items: center;
+  }
+
+  .sectors__media {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+  }
+
+  .sectors :global(.sectors__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sectors__headline {
+    margin-top: 0.75rem;
+  }
+
+  .sectors__lead {
+    margin-top: 1.25rem;
+  }
+
+  .sectors__list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .sectors__item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .sectors__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--white);
+    color: var(--obp-blue);
+    box-shadow: 0 1px 2px rgb(8 53 155 / 0.08);
+  }
+
+  .sectors__icon :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sectors__title {
+    font-size: 1.1875rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .sectors__text {
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 833px) {
+    .sectors__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sectors__media {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+    }
+
+    .sectors__copy {
+      order: -1;
+    }
+  }
+</style>

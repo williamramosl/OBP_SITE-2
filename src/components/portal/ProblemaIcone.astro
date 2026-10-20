@@ -1,0 +1,23 @@
+---
+// Ícone de cada tipo de problema dos chamados.
+import { CircleQuestionMark, Contrast, Droplets, FileX, Network, Power, TriangleAlert } from '@lucide/astro';
+import type { ProblemaId } from '../../data/portal';
+
+interface Props {
+  problema: ProblemaId;
+}
+
+const icones = {
+  atolamento: FileX,
+  qualidade: Contrast,
+  suprimento: Droplets,
+  erro: TriangleAlert,
+  'nao-liga': Power,
+  rede: Network,
+  outro: CircleQuestionMark,
+} satisfies Record<ProblemaId, unknown>;
+
+const Icone = icones[Astro.props.problema];
+---
+
+<Icone aria-hidden="true" stroke-width={1.75} />

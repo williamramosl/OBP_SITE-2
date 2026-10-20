@@ -1,0 +1,83 @@
+---
+import { Image } from 'astro:assets';
+import brother from '../../assets/partners/brother.png';
+import canon from '../../assets/partners/canon.png';
+import hp from '../../assets/partners/hp.png';
+import kyocera from '../../assets/partners/kyocera.png';
+import ricoh from '../../assets/partners/ricoh.png';
+import samsung from '../../assets/partners/samsung.png';
+
+const partners = [
+  { name: 'Brother', src: brother, h: 30 },
+  { name: 'Ricoh', src: ricoh, h: 24 },
+  { name: 'Canon', src: canon, h: 28 },
+  { name: 'Kyocera', src: kyocera, h: 30 },
+  { name: 'Samsung', src: samsung, h: 18 },
+  { name: 'HP', src: hp, h: 44 },
+];
+---
+
+<section id="parceiros" class="section partners" aria-labelledby="partners-title">
+  <div class="container">
+    <header class="section-head" data-reveal>
+      <p class="eyebrow">Fabricantes parceiros</p>
+      <h2 id="partners-title" class="headline">O melhor da tecnologia no seu negócio.</h2>
+      <p class="lead">Equipamentos, peças e suprimentos das marcas que você já conhece e confia.</p>
+    </header>
+
+    <ul class="partners__list" data-reveal>
+      {partners.map((p) => (
+        <li class="partners__item">
+          <Image src={p.src} alt={p.name} height={p.h * 2} style={`height: ${p.h}px`} class="partners__logo" />
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .partners__list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem clamp(2.5rem, 6vw, 4.5rem);
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .partners__item {
+    display: flex;
+    align-items: center;
+    height: 48px;
+  }
+
+  .partners :global(.partners__logo) {
+    width: auto;
+    filter: grayscale(1);
+    opacity: 0.55;
+    transition:
+      filter 0.4s ease,
+      opacity 0.4s ease;
+  }
+
+  .partners__item:hover :global(.partners__logo) {
+    filter: none;
+    opacity: 1;
+  }
+
+  @media (max-width: 833px) {
+    .partners__list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      justify-items: center;
+      gap: 2rem 1rem;
+    }
+
+    .partners :global(.partners__logo) {
+      max-width: 100%;
+      object-fit: contain;
+    }
+  }
+</style>

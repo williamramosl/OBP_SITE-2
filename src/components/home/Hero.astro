@@ -1,0 +1,184 @@
+---
+import { Image } from 'astro:assets';
+import { ChevronRight } from '@lucide/astro';
+import heroImg from '../../assets/img/hero-impressora.jpg';
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__media">
+    <Image
+      src={heroImg}
+      alt="Impressora multifuncional branca sobre um móvel em um escritório"
+      widths={[640, 960, 1280, 1920, 2560]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      class="hero__img"
+    />
+  </div>
+
+  <div class="hero__content container-wide">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">Outsourcing de impressão</p>
+      <h1 id="hero-title" class="hero__title">Impressão sem preocupação.</h1>
+      <p class="hero__lead">
+        Equipamentos, suprimentos, manutenção e monitoramento em um só contrato. Você foca no seu negócio. Nós
+        cuidamos do resto.
+      </p>
+      <div class="actions hero__actions">
+        <a class="btn" href="/contato/">Solicite uma proposta</a>
+        <a class="link" href="/solucoes/">Conheça as soluções <ChevronRight aria-hidden="true" /></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    --hero-bg: #4a4b48;
+    position: relative;
+    isolation: isolate;
+    background: var(--hero-bg);
+    color: var(--white);
+    overflow: hidden;
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .hero__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 0) 35%, rgb(18 18 17 / 0.35) 100%);
+  }
+
+  .hero :global(.hero__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 20% 60%;
+  }
+
+  .hero__content {
+    min-height: clamp(560px, calc(100svh - var(--nav-h)), 900px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-block: 4rem;
+  }
+
+  .hero__copy {
+    width: min(100%, 540px, 40vw);
+    margin-right: clamp(0rem, 4vw, 4rem);
+  }
+
+  .hero__eyebrow {
+    font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.375rem);
+    font-weight: 600;
+    color: #9cc8ff;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero__title {
+    /* No layout sobreposto a largura do texto é limitada pela foto: "Impressão sem" precisa caber em uma linha */
+    font-size: min(4.75rem, 5.6vw);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .hero__lead {
+    margin-top: 1.25rem;
+    font-size: var(--fs-lead);
+    line-height: 1.38;
+    color: rgb(255 255 255 / 0.86);
+    text-wrap: pretty;
+  }
+
+  .hero__actions {
+    justify-content: flex-start;
+    margin-top: 2rem;
+  }
+
+  .hero__actions .link {
+    color: #cfe4ff;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero :global(.hero__img) {
+      animation: hero-zoom 2.4s var(--ease-out) both;
+    }
+
+    .hero__copy > * {
+      animation: hero-rise 1.1s var(--ease-out) both;
+    }
+
+    .hero__copy > :nth-child(2) { animation-delay: 0.08s; }
+    .hero__copy > :nth-child(3) { animation-delay: 0.16s; }
+    .hero__copy > :nth-child(4) { animation-delay: 0.24s; }
+  }
+
+  @keyframes hero-zoom {
+    from { transform: scale(1.08); }
+  }
+
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  /* Tablet e mobile: texto em cima, foto embaixo, como nas páginas da Apple */
+  @media (max-width: 1179px) {
+    .hero {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .hero__media {
+      position: relative;
+      order: 2;
+      aspect-ratio: 16 / 9;
+    }
+
+    .hero__media::after {
+      background: linear-gradient(180deg, var(--hero-bg) 0%, rgb(74 75 72 / 0) 22%);
+    }
+
+    .hero :global(.hero__img) {
+      object-position: 22% 70%;
+    }
+
+    .hero__content {
+      min-height: 0;
+      justify-content: center;
+      padding-block: 3.5rem 1.5rem;
+    }
+
+    .hero__copy {
+      width: min(100%, 640px);
+      margin-right: 0;
+    }
+
+    .hero__title {
+      font-size: var(--fs-hero);
+    }
+
+    .hero__actions {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 833px) {
+    .hero__media {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

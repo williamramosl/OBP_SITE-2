@@ -1,0 +1,632 @@
+---
+import { Barcode, CircleAlert, CircleCheckBig, Copy, Download, FileText, Inbox, Info, Palette, Printer, ReceiptText } from '@lucide/astro';
+import Portal from '../../../../layouts/Portal.astro';
+import SocialIcon from '../../../../components/SocialIcon.astro';
+import { company } from '../../../../data/site';
+import { portalRoutes } from '../../../../data/portal';
+---
+
+<Portal title="Fatura" heading="Fatura" subheading="Carregando…" active="faturas" back={{ label: 'Faturas', href: portalRoutes.faturas }}>
+  <div class="fd" hidden data-fatura>
+    <div class="fd__principal">
+      <section class="p-card fd-resumo" aria-labelledby="fd-ref">
+        <div class="fd-resumo__topo">
+          <span class="p-chip"><ReceiptText aria-hidden="true" stroke-width={1.75} /></span>
+          <span class="status" data-status-pill></span>
+        </div>
+        <h2 id="fd-ref" class="fd-resumo__ref" data-campo="referencia"></h2>
+        <p class="fd-resumo__valor" data-campo="valor"></p>
+        <dl class="fd-resumo__datas">
+          <div>
+            <dt>Emitida em</dt>
+            <dd data-campo="emitida"></dd>
+          </div>
+          <div>
+            <dt>Vencimento</dt>
+            <dd data-campo="vencimento"></dd>
+          </div>
+          <div>
+            <dt>Situação</dt>
+            <dd data-campo="situacao"></dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="p-card fd-itens" aria-labelledby="itens-titulo">
+        <h2 id="itens-titulo" class="p-card__title">O que está sendo cobrado</h2>
+        <table class="itens">
+          <thead class="visually-hidden">
+            <tr><th scope="col">Item</th><th scope="col">Valor</th></tr>
+          </thead>
+          <tbody data-itens></tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Total</th>
+              <td data-campo="total"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+
+      <section class="p-card consumo" aria-labelledby="consumo-titulo" hidden data-consumo>
+        <div class="p-card__head">
+          <div>
+            <h2 id="consumo-titulo" class="p-card__title">Consumo de páginas</h2>
+            <p class="p-card__sub" data-campo="consumoRef"></p>
+          </div>
+          <Printer aria-hidden="true" stroke-width={1.75} />
+        </div>
+
+        <div class="consumo__bloco">
+          <p class="consumo__linha">
+            <span>Preto e branco</span>
+            <strong data-campo="pbTotal"></strong>
+          </p>
+          <div class="consumo__barra" aria-hidden="true">
+            <span class="consumo__franquia" data-barra-franquia></span>
+            <span class="consumo__excedente" data-barra-excedente></span>
+          </div>
+          <p class="consumo__legenda">
+            <span><i class="consumo__ponto"></i><span data-campo="franquia"></span></span>
+            <span><i class="consumo__ponto consumo__ponto--exc"></i><span data-campo="excedente"></span></span>
+          </p>
+        </div>
+
+        <p class="consumo__linha consumo__cor">
+          <span><Palette aria-hidden="true" stroke-width={1.75} /> Coloridas</span>
+          <strong data-campo="cor"></strong>
+        </p>
+      </section>
+    </div>
+
+    <aside class="fd__lateral">
+      <section class="p-card pagar" aria-labelledby="pagar-titulo" hidden data-pagar>
+        <h2 id="pagar-titulo" class="p-card__title">Pagamento</h2>
+
+        <div class="p-banner p-banner--error pagar__vencida" hidden data-vencida>
+          <CircleAlert aria-hidden="true" />
+          <p data-campo="vencidaTexto"></p>
+        </div>
+
+        <p class="pagar__rotulo" id="linha-rotulo">Linha digitável do boleto</p>
+        <p class="pagar__linha" aria-labelledby="linha-rotulo" data-campo="linha" data-linha></p>
+        <button class="btn btn--dark pagar__botao" type="button" data-copiar>
+          <Copy aria-hidden="true" />
+          Copiar código
+        </button>
+        <button class="btn btn--outline pagar__botao" type="button" data-baixar>
+          <Download aria-hidden="true" />
+          Baixar boleto em PDF
+        </button>
+        <p class="pagar__nota">
+          <Info aria-hidden="true" />
+          Pagamentos por boleto podem levar até 3 dias úteis para aparecer como pagos.
+        </p>
+      </section>
+
+      <section class="p-card pago" aria-labelledby="pago-titulo" hidden data-pago>
+        <span class="pago__icone"><CircleCheckBig aria-hidden="true" /></span>
+        <h2 id="pago-titulo" class="p-card__title">Fatura paga</h2>
+        <p data-campo="pagoEm"></p>
+      </section>
+
+      <section class="p-card docs" aria-labelledby="docs-titulo">
+        <h2 id="docs-titulo" class="p-card__title">Documentos</h2>
+        <ul class="docs__lista">
+          <li>
+            <button class="docs__item" type="button" data-baixar>
+              <span class="p-chip p-chip--sm"><FileText aria-hidden="true" stroke-width={1.75} /></span>
+              <span class="docs__texto">
+                <strong>Nota fiscal de serviço</strong>
+                <span data-campo="nfse"></span>
+              </span>
+              <Download class="docs__download" aria-hidden="true" />
+            </button>
+          </li>
+          <li>
+            <button class="docs__item" type="button" data-baixar>
+              <span class="p-chip p-chip--sm"><Barcode aria-hidden="true" stroke-width={1.75} /></span>
+              <span class="docs__texto">
+                <strong>Boleto</strong>
+                <span>PDF para imprimir ou pagar</span>
+              </span>
+              <Download class="docs__download" aria-hidden="true" />
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <a class="p-ajuda" href={company.whatsappHref} target="_blank" rel="noopener" data-ajuda>
+        <span class="p-ajuda__icon"><SocialIcon name="whatsapp" size={20} /></span>
+        <span>
+          <strong>Dúvidas sobre esta fatura?</strong>
+          Fale com o financeiro pelo WhatsApp.
+        </span>
+      </a>
+    </aside>
+  </div>
+
+  <section class="p-card p-empty nao-encontrada" hidden data-nao-encontrada>
+    <Inbox aria-hidden="true" />
+    <strong>Fatura não encontrada</strong>
+    <span>Confira o número ou volte para a lista de faturas.</span>
+    <a class="btn btn--sm" href={portalRoutes.faturas}>Ver faturas</a>
+  </section>
+
+  <template id="tpl-item">
+    <tr>
+      <th scope="row">
+        <span data-campo="descricao"></span>
+        <small data-campo="detalhe"></small>
+      </th>
+      <td data-campo="valor"></td>
+    </tr>
+  </template>
+</Portal>
+
+<script>
+  import { codigoParaCopiar, obterFatura, prazoFatura, statusDaFatura, tituloFatura } from '../../../../lib/portal/faturas';
+  import { aplicarSelo, avisar, clonar, copiarTexto, preencher } from '../../../../lib/portal/dom';
+  import { formatarCompetencia, formatarDia, formatarMoeda, formatarNumero } from '../../../../lib/portal/formato';
+  import { company } from '../../../../data/site';
+  import { demoContrato, faturaStatusInfo } from '../../../../data/portal';
+
+  const id = new URLSearchParams(location.search).get('id') ?? '';
+  const raiz = document.querySelector<HTMLElement>('[data-fatura]')!;
+
+  async function iniciar() {
+    const fatura = id ? await obterFatura(id) : null;
+    const sub = document.querySelector('[data-subheading]');
+    if (!fatura) {
+      document.querySelector<HTMLElement>('[data-nao-encontrada]')!.hidden = false;
+      if (sub) sub.textContent = 'Não encontramos esta fatura.';
+      return;
+    }
+
+    const status = statusDaFatura(fatura);
+    const titulo = tituloFatura(fatura);
+    document.title = `Fatura ${fatura.id} | Área do Cliente Office Brasil Print`;
+    document.querySelector('[data-heading]')!.textContent = fatura.tipo === 'mensal' ? `Fatura de ${titulo.split(' de ')[0].toLowerCase()}` : titulo;
+    if (sub) sub.textContent = `Nº ${fatura.id}${fatura.tipo === 'avulsa' ? ' · Fatura avulsa' : ''}`;
+
+    aplicarSelo(raiz.querySelector('[data-status-pill]'), status, faturaStatusInfo[status].label);
+    preencher(raiz, {
+      referencia: titulo,
+      valor: formatarMoeda(fatura.valor),
+      emitida: formatarDia(fatura.emitidaEm),
+      vencimento: formatarDia(fatura.vencimento),
+      situacao: prazoFatura(fatura),
+      total: formatarMoeda(fatura.valor),
+      linha: fatura.linhaDigitavel,
+      nfse: `NFS-e nº ${fatura.notaFiscal}`,
+      pagoEm: fatura.pagaEm ? `Pagamento confirmado em ${formatarDia(fatura.pagaEm)}.` : '',
+      vencidaTexto: `Esta fatura venceu em ${formatarDia(fatura.vencimento)}. Se o banco não aceitar mais o boleto, peça um atualizado ao financeiro.`,
+    });
+    raiz.querySelector('[data-campo="situacao"]')?.classList.toggle('is-alerta', status === 'vencida');
+
+    // Itens cobrados
+    raiz.querySelector('[data-itens]')?.replaceChildren(
+      ...fatura.itens.map((item) => {
+        const linha = clonar('tpl-item');
+        preencher(linha, {
+          descricao: item.descricao,
+          detalhe: item.detalhe ?? '',
+          valor: item.valor ? formatarMoeda(item.valor) : 'Incluso',
+        });
+        return linha;
+      }),
+    );
+
+    // Consumo (só nas faturas mensais)
+    if (fatura.paginas) {
+      const { excedentePb, cor } = fatura.paginas;
+      const franquia = demoContrato.franquiaPaginas;
+      const totalPb = franquia + excedentePb;
+      preencher(raiz, {
+        consumoRef: `Referente a ${formatarCompetencia(fatura.competencia).toLowerCase()}`,
+        pbTotal: `${formatarNumero(totalPb)} páginas`,
+        franquia: `Franquia: ${formatarNumero(franquia)}`,
+        excedente: `Excedente: ${formatarNumero(excedentePb)}`,
+        cor: `${formatarNumero(cor)} páginas`,
+      });
+      raiz.querySelector<HTMLElement>('[data-barra-franquia]')!.style.flexGrow = String(franquia);
+      raiz.querySelector<HTMLElement>('[data-barra-excedente]')!.style.flexGrow = String(excedentePb);
+      raiz.querySelector<HTMLElement>('[data-consumo]')!.hidden = false;
+    }
+
+    // Pagamento ou confirmação
+    raiz.querySelector<HTMLElement>('[data-pagar]')!.hidden = status === 'paga';
+    raiz.querySelector<HTMLElement>('[data-pago]')!.hidden = status !== 'paga';
+    raiz.querySelector<HTMLElement>('[data-vencida]')!.hidden = status !== 'vencida';
+
+    raiz.querySelector('[data-copiar]')?.addEventListener('click', async () => {
+      if (await copiarTexto(codigoParaCopiar(fatura))) {
+        avisar('Código do boleto copiado.');
+        return;
+      }
+      // Sem permissão para a área de transferência: deixa o código selecionado para copiar à mão.
+      const linha = raiz.querySelector('[data-linha]');
+      if (linha) getSelection()?.selectAllChildren(linha);
+      avisar('Código selecionado. Agora é só copiar.');
+    });
+
+    // TODO(supabase): gerar link temporário do PDF (boleto ou nota) e abrir.
+    raiz.querySelectorAll('[data-baixar]').forEach((b) =>
+      b.addEventListener('click', () => avisar('Na demonstração os PDFs ainda não estão disponíveis.')),
+    );
+
+    raiz
+      .querySelector('[data-ajuda]')
+      ?.setAttribute('href', `${company.whatsappHref}?text=${encodeURIComponent(`Olá! Tenho uma dúvida sobre a fatura nº ${fatura.id} (${titulo}).`)}`);
+
+    raiz.hidden = false;
+  }
+
+  iniciar();
+</script>
+
+<style>
+  .fd {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .fd[hidden],
+  .nao-encontrada[hidden] {
+    display: none;
+  }
+
+  .fd__principal,
+  .fd__lateral {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .fd__lateral {
+    position: sticky;
+    top: 1.5rem;
+    gap: 1rem;
+  }
+
+  /* Resumo */
+  .fd-resumo__topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .fd-resumo__ref {
+    margin-top: 1.25rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .fd-resumo__valor {
+    margin-top: 0.125rem;
+    font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3.25rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fd-resumo__datas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .fd-resumo__datas dt {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .fd-resumo__datas dd {
+    margin-top: 0.125rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fd-resumo__datas dd.is-alerta {
+    color: #c0262d;
+  }
+
+  /* Itens */
+  .itens {
+    width: 100%;
+    margin-top: 0.75rem;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  .itens :global(th),
+  .itens :global(td) {
+    padding-block: 0.875rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .itens :global(tbody tr + tr) {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .itens :global(tbody th) {
+    display: grid;
+    font-weight: 500;
+  }
+
+  .itens :global(tbody small) {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+
+  .itens :global(td) {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .itens tfoot tr {
+    border-top: 2px solid var(--ink);
+  }
+
+  .itens tfoot th,
+  .itens tfoot td {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  /* Consumo de páginas */
+  .consumo__bloco {
+    margin-top: 1.25rem;
+  }
+
+  .consumo__linha {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .consumo__linha strong {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .consumo__barra {
+    display: flex;
+    gap: 3px;
+    height: 12px;
+    margin-top: 0.625rem;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .consumo__franquia {
+    background: var(--navy);
+  }
+
+  .consumo__excedente {
+    background: var(--obp-blue-bright);
+  }
+
+  .consumo__legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .consumo__legenda > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .consumo__ponto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--navy);
+  }
+
+  .consumo__ponto--exc {
+    background: var(--obp-blue-bright);
+  }
+
+  .consumo__cor {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .consumo__cor span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .consumo__cor :global(svg) {
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+  }
+
+  /* Pagamento */
+  .pagar__vencida {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    font-size: 0.875rem;
+  }
+
+  .pagar__rotulo {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .pagar__linha {
+    margin-top: 0.375rem;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    word-spacing: 0.25em;
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+
+  .pagar__botao {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  .pagar__nota {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+
+  .pagar__nota :global(svg) {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 0.0625rem;
+    color: var(--ink-3);
+  }
+
+  .pago {
+    text-align: center;
+  }
+
+  .pago__icone {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    background: #e7f7ee;
+    color: #157a3e;
+  }
+
+  .pago__icone :global(svg) {
+    width: 26px;
+    height: 26px;
+  }
+
+  .pago p {
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .pagar[hidden],
+  .pago[hidden],
+  .consumo[hidden] {
+    display: none;
+  }
+
+  /* Documentos */
+  .docs__lista {
+    display: grid;
+    margin-top: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs__lista li + li {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .docs__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: calc(100% + 1rem);
+    padding: 0.75rem 0.5rem;
+    margin-inline: -0.5rem;
+    border-radius: 12px;
+    text-align: left;
+    transition: background-color 0.2s ease;
+  }
+
+  .docs__item:hover {
+    background: #f5f7fb;
+  }
+
+  .docs__texto {
+    flex: 1;
+    display: grid;
+    min-width: 0;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .docs__texto strong {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .docs__item :global(.docs__download) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+  }
+
+  .nao-encontrada .btn {
+    margin-top: 0.75rem;
+  }
+
+  /* Em uma coluna, o pagamento sobe para logo depois do valor */
+  @media (max-width: 1100px) {
+    .fd {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fd__principal,
+    .fd__lateral {
+      display: contents;
+    }
+
+    .fd-resumo { order: 1; }
+    .pagar, .pago { order: 2; }
+    .fd-itens { order: 3; }
+    .consumo { order: 4; }
+    .docs { order: 5; }
+    .fd__lateral :global(.p-ajuda) { order: 6; }
+  }
+
+  @media (max-width: 560px) {
+    .fd-resumo__datas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fd-resumo__datas div:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

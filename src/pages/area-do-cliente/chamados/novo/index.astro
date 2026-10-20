@@ -1,0 +1,671 @@
+---
+import { Check, CircleAlert, ImagePlus, Info, Printer, Send, X, Zap } from '@lucide/astro';
+import Portal from '../../../../layouts/Portal.astro';
+import ProblemaIcone from '../../../../components/portal/ProblemaIcone.astro';
+import SocialIcon from '../../../../components/SocialIcon.astro';
+import { company } from '../../../../data/site';
+import { demoCliente, demoEquipamentos, problemas, portalRoutes } from '../../../../data/portal';
+
+const whatsappUrgente = `${company.whatsappHref}?text=${encodeURIComponent('Olá! Tenho um equipamento parado e preciso de ajuda.')}`;
+---
+
+<Portal
+  title="Abrir chamado"
+  heading="Abrir chamado"
+  subheading="Leva menos de um minuto. Nossa equipe técnica recebe na hora."
+  active="chamados"
+  back={{ label: 'Chamados', href: portalRoutes.chamados }}
+  hideCta
+>
+  <form class="p-form" novalidate data-novo>
+    <div class="p-form__passos">
+      <section class="p-card passo" aria-labelledby="passo-equipamento" data-passo="equipamento">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>1</span><Check /></span>
+          <div>
+            <h2 id="passo-equipamento" class="p-card__title">Qual equipamento?</h2>
+            <p class="p-card__sub">Escolha a impressora que está com problema.</p>
+          </div>
+        </header>
+        <fieldset class="opcoes opcoes--equip" aria-describedby="erro-equipamento">
+          <legend class="visually-hidden">Equipamento</legend>
+          {demoEquipamentos.map((e) => (
+            <label class="opcao">
+              <input type="radio" name="equipamento" value={e.id} data-rotulo={`${e.modelo} · ${e.local}`} />
+              <span class="p-chip p-chip--sm"><Printer aria-hidden="true" stroke-width={1.75} /></span>
+              <span class="opcao__text">
+                <strong>{e.modelo}</strong>
+                <span>{e.local}</span>
+                <small>Série {e.serie}</small>
+              </span>
+              <span class="opcao__check" aria-hidden="true"><Check /></span>
+            </label>
+          ))}
+          <label class="opcao opcao--outro">
+            <input type="radio" name="equipamento" value="" data-rotulo="Outro equipamento" />
+            <span class="opcao__text">
+              <strong>Outro equipamento</strong>
+              <span>Não encontrei na lista</span>
+            </span>
+            <span class="opcao__check" aria-hidden="true"><Check /></span>
+          </label>
+        </fieldset>
+        <p class="field-error passo__erro" id="erro-equipamento" aria-live="polite"></p>
+      </section>
+
+      <section class="p-card passo" aria-labelledby="passo-problema" data-passo="problema">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>2</span><Check /></span>
+          <div>
+            <h2 id="passo-problema" class="p-card__title">O que está acontecendo?</h2>
+            <p class="p-card__sub">Escolha a opção mais próxima. Os detalhes vêm a seguir.</p>
+          </div>
+        </header>
+        <fieldset class="opcoes opcoes--problema" aria-describedby="erro-problema">
+          <legend class="visually-hidden">Tipo de problema</legend>
+          {problemas.map((p) => (
+            <label class="opcao opcao--tile">
+              <input type="radio" name="problema" value={p.id} data-rotulo={p.titulo} />
+              <span class="p-chip"><ProblemaIcone problema={p.id} /></span>
+              <span class="opcao__text">
+                <strong>{p.titulo}</strong>
+                <span>{p.dica}</span>
+              </span>
+              <span class="opcao__check" aria-hidden="true"><Check /></span>
+            </label>
+          ))}
+        </fieldset>
+        <p class="field-error passo__erro" id="erro-problema" aria-live="polite"></p>
+      </section>
+
+      <section class="p-card passo" aria-labelledby="passo-detalhes" data-passo="detalhes">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>3</span><Check /></span>
+          <div>
+            <h2 id="passo-detalhes" class="p-card__title">Conte os detalhes</h2>
+            <p class="p-card__sub">Quanto mais informação, mais rápido o técnico resolve.</p>
+          </div>
+        </header>
+
+        <div class="detalhes">
+          <div class="field">
+            <textarea
+              id="n-descricao"
+              name="descricao"
+              rows="4"
+              maxlength="1000"
+              placeholder=" "
+              aria-describedby="erro-descricao n-descricao-dica"
+              required></textarea>
+            <label for="n-descricao">Descreva o problema</label>
+          </div>
+          <div class="detalhes__meta">
+            <p id="n-descricao-dica">Ex.: aparece o código C6000 no painel desde hoje cedo.</p>
+            <span data-contador>0/1000</span>
+          </div>
+          <p class="field-error" id="erro-descricao" aria-live="polite"></p>
+
+          <div class="fotos">
+            <label class="fotos__add" for="n-fotos">
+              <span class="p-chip p-chip--sm"><ImagePlus aria-hidden="true" stroke-width={1.75} /></span>
+              <span class="fotos__text">
+                <strong>Adicionar fotos <span>(opcional)</span></strong>
+                <small>Até 3 imagens JPG, PNG ou WEBP, com até 10 MB cada.</small>
+              </span>
+            </label>
+            <input
+              id="n-fotos"
+              class="visually-hidden"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              aria-describedby="erro-fotos"
+              data-fotos
+            />
+            <ul class="fotos__lista" data-fotos-lista></ul>
+            <p class="field-error" id="erro-fotos" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="p-card passo" aria-labelledby="passo-contato" data-passo="contato">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>4</span><Check /></span>
+          <div>
+            <h2 id="passo-contato" class="p-card__title">Urgência e contato</h2>
+            <p class="p-card__sub">Quem vai receber o técnico no local?</p>
+          </div>
+        </header>
+
+        <fieldset class="opcoes opcoes--urgencia">
+          <legend class="visually-hidden">Urgência</legend>
+          <label class="opcao">
+            <input type="radio" name="urgencia" value="normal" data-rotulo="Normal" checked />
+            <span class="opcao__text">
+              <strong>Normal</strong>
+              <span>O equipamento ainda funciona, com limitações.</span>
+            </span>
+            <span class="opcao__check" aria-hidden="true"><Check /></span>
+          </label>
+          <label class="opcao opcao--urgente">
+            <input type="radio" name="urgencia" value="urgente" data-rotulo="Urgente" />
+            <span class="p-chip p-chip--sm"><Zap aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="opcao__text">
+              <strong>Urgente</strong>
+              <span>Equipamento parado, sem imprimir.</span>
+            </span>
+            <span class="opcao__check" aria-hidden="true"><Check /></span>
+          </label>
+        </fieldset>
+
+        <div class="contato">
+          <div>
+            <div class="field">
+              <input
+                id="n-contato"
+                name="contato"
+                type="text"
+                autocomplete="name"
+                value={demoCliente.nome}
+                placeholder=" "
+                aria-describedby="erro-contato"
+                required
+              />
+              <label for="n-contato">Nome de quem acompanha</label>
+            </div>
+            <p class="field-error" id="erro-contato" aria-live="polite"></p>
+          </div>
+          <div>
+            <div class="field">
+              <input
+                id="n-telefone"
+                name="telefone"
+                type="tel"
+                autocomplete="tel"
+                inputmode="tel"
+                value={demoCliente.telefone}
+                placeholder=" "
+                aria-describedby="erro-telefone"
+                required
+              />
+              <label for="n-telefone">Telefone com DDD</label>
+            </div>
+            <p class="field-error" id="erro-telefone" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="p-form__lateral">
+      <div class="p-card resumo-envio">
+        <h2 class="p-card__title">Resumo</h2>
+        <dl class="resumo-envio__lista">
+          <div>
+            <dt>Equipamento</dt>
+            <dd data-resumo="equipamento" data-vazio>Não selecionado</dd>
+          </div>
+          <div>
+            <dt>Problema</dt>
+            <dd data-resumo="problema" data-vazio>Não selecionado</dd>
+          </div>
+          <div>
+            <dt>Urgência</dt>
+            <dd data-resumo="urgencia">Normal</dd>
+          </div>
+          <div>
+            <dt>Fotos</dt>
+            <dd data-resumo="fotos" data-vazio>Nenhuma</dd>
+          </div>
+        </dl>
+
+        <div class="p-banner p-banner--error resumo-envio__erro" role="alert" hidden data-erro-geral>
+          <CircleAlert aria-hidden="true" />
+          <p>Faltam algumas informações. Confira os campos destacados.</p>
+        </div>
+
+        <button class="btn btn--dark resumo-envio__botao" type="submit" data-enviar>
+          <Send aria-hidden="true" />
+          <span data-enviar-texto>Enviar chamado</span>
+        </button>
+        <p class="resumo-envio__nota">
+          <Info aria-hidden="true" />
+          Você acompanha cada etapa em Chamados e pode conversar com a equipe técnica por lá.
+        </p>
+      </div>
+
+      <a class="urgente-card" href={whatsappUrgente} target="_blank" rel="noopener">
+        <span class="urgente-card__icon"><SocialIcon name="whatsapp" size={20} /></span>
+        <span>
+          <strong>Equipamento parado agora?</strong>
+          Fale também com a gente pelo WhatsApp.
+        </span>
+      </a>
+    </aside>
+  </form>
+
+  <template id="tpl-foto">
+    <li class="foto">
+      <img alt="" data-foto-img />
+      <span class="foto__nome" data-campo="nome"></span>
+      <button class="foto__remover" type="button" data-foto-remover>
+        <X aria-hidden="true" />
+        <span class="visually-hidden" data-campo="remover"></span>
+      </button>
+    </li>
+  </template>
+</Portal>
+
+<script>
+  import { abrirChamado } from '../../../../lib/portal/chamados';
+  import { clonar, preencher } from '../../../../lib/portal/dom';
+  import { portalRoutes, type ProblemaId } from '../../../../data/portal';
+
+  const MAX_FOTOS = 3;
+  const MAX_BYTES = 10 * 1024 * 1024;
+  const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
+
+  const form = document.querySelector<HTMLFormElement>('[data-novo]')!;
+  const descricao = form.querySelector<HTMLTextAreaElement>('#n-descricao')!;
+  const contato = form.querySelector<HTMLInputElement>('#n-contato')!;
+  const telefone = form.querySelector<HTMLInputElement>('#n-telefone')!;
+  const inputFotos = form.querySelector<HTMLInputElement>('[data-fotos]')!;
+  const listaFotos = form.querySelector('[data-fotos-lista]')!;
+  const erroGeral = form.querySelector<HTMLElement>('[data-erro-geral]')!;
+  const enviar = form.querySelector<HTMLButtonElement>('[data-enviar]')!;
+
+  let fotos: { arquivo: File; url: string }[] = [];
+
+  const marcado = (nome: string) => form.querySelector<HTMLInputElement>(`input[name="${nome}"]:checked`);
+
+  // ---------- Mensagens de erro ----------
+  function mostrarErro(id: string, texto: string) {
+    const out = document.getElementById(id);
+    if (out) out.textContent = texto;
+    const campo = form.querySelector<HTMLElement>(`[aria-describedby~="${id}"]`);
+    if (campo instanceof HTMLInputElement || campo instanceof HTMLTextAreaElement) {
+      campo.closest('.field')?.classList.toggle('field--error', Boolean(texto));
+      campo.setAttribute('aria-invalid', String(Boolean(texto)));
+    }
+    if (texto) return;
+    // Erro corrigido: tira o destaque do passo e o aviso geral quando não sobrar nenhum.
+    const passo = out?.closest('[data-passo]');
+    if (passo && !passo.querySelector('.field-error:not(:empty)')) passo.classList.remove('passo--erro');
+    if (!form.querySelector('.passo--erro')) erroGeral.hidden = true;
+  }
+
+  // ---------- Resumo lateral e passos concluídos ----------
+  function atualizarResumo() {
+    const rotulos: Record<string, string | undefined> = {
+      equipamento: marcado('equipamento')?.dataset.rotulo,
+      problema: marcado('problema')?.dataset.rotulo,
+      urgencia: marcado('urgencia')?.dataset.rotulo,
+      fotos: fotos.length ? `${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}` : undefined,
+    };
+    for (const [campo, valor] of Object.entries(rotulos)) {
+      const dd = form.querySelector<HTMLElement>(`[data-resumo="${campo}"]`);
+      if (!dd) continue;
+      dd.toggleAttribute('data-vazio', !valor);
+      dd.textContent = valor ?? (campo === 'fotos' ? 'Nenhuma' : 'Não selecionado');
+    }
+
+    const ok: Record<string, boolean> = {
+      equipamento: Boolean(marcado('equipamento')),
+      problema: Boolean(marcado('problema')),
+      detalhes: descricao.value.trim().length >= 10,
+      contato: Boolean(contato.value.trim()) && telefone.value.replace(/\D/g, '').length >= 10,
+    };
+    for (const [passo, valido] of Object.entries(ok)) {
+      form.querySelector(`[data-passo="${passo}"]`)?.classList.toggle('passo--ok', valido);
+    }
+  }
+
+  form.addEventListener('change', (e) => {
+    const alvo = e.target as HTMLInputElement;
+    if (alvo.name === 'equipamento') mostrarErro('erro-equipamento', '');
+    if (alvo.name === 'problema') mostrarErro('erro-problema', '');
+    atualizarResumo();
+  });
+
+  form.addEventListener('input', (e) => {
+    const alvo = e.target as HTMLElement;
+    if (alvo === descricao) {
+      form.querySelector('[data-contador]')!.textContent = `${descricao.value.length}/1000`;
+      if (descricao.getAttribute('aria-invalid') === 'true') mostrarErro('erro-descricao', '');
+    }
+    if (alvo === contato && contato.getAttribute('aria-invalid') === 'true') mostrarErro('erro-contato', '');
+    if (alvo === telefone && telefone.getAttribute('aria-invalid') === 'true') mostrarErro('erro-telefone', '');
+    atualizarResumo();
+  });
+
+  // ---------- Fotos ----------
+  function renderFotos() {
+    listaFotos.replaceChildren(
+      ...fotos.map((foto, i) => {
+        const item = clonar('tpl-foto');
+        item.querySelector<HTMLImageElement>('[data-foto-img]')!.src = foto.url;
+        preencher(item, { nome: foto.arquivo.name, remover: `Remover ${foto.arquivo.name}` });
+        item.querySelector('[data-foto-remover]')?.addEventListener('click', () => {
+          URL.revokeObjectURL(foto.url);
+          fotos.splice(i, 1);
+          renderFotos();
+          atualizarResumo();
+          inputFotos.focus();
+        });
+        return item;
+      }),
+    );
+    form.querySelector('.fotos__add')?.classList.toggle('is-cheio', fotos.length >= MAX_FOTOS);
+  }
+
+  inputFotos.addEventListener('change', () => {
+    const recusadas: string[] = [];
+    for (const arquivo of inputFotos.files ?? []) {
+      if (fotos.length >= MAX_FOTOS) {
+        recusadas.push(`Limite de ${MAX_FOTOS} fotos atingido.`);
+        break;
+      }
+      if (!TIPOS_FOTO.includes(arquivo.type)) recusadas.push(`"${arquivo.name}" não é uma imagem JPG, PNG ou WEBP.`);
+      else if (arquivo.size > MAX_BYTES) recusadas.push(`"${arquivo.name}" passa de 10 MB.`);
+      else fotos.push({ arquivo, url: URL.createObjectURL(arquivo) });
+    }
+    inputFotos.value = '';
+    mostrarErro('erro-fotos', recusadas.join(' '));
+    renderFotos();
+    atualizarResumo();
+  });
+
+  // ---------- Equipamento vindo do painel (?equipamento=eq-2) ----------
+  const preSelecionado = new URLSearchParams(location.search).get('equipamento');
+  if (preSelecionado) {
+    const radio = form.querySelector<HTMLInputElement>(`input[name="equipamento"][value="${CSS.escape(preSelecionado)}"]`);
+    if (radio) radio.checked = true;
+  }
+  atualizarResumo();
+
+  // ---------- Envio ----------
+  function validar() {
+    const erros: [string, string, HTMLElement | null][] = [];
+    if (!marcado('equipamento')) erros.push(['erro-equipamento', 'Escolha o equipamento.', form.querySelector('input[name="equipamento"]')]);
+    if (!marcado('problema')) erros.push(['erro-problema', 'Escolha o tipo de problema.', form.querySelector('input[name="problema"]')]);
+    if (descricao.value.trim().length < 10) erros.push(['erro-descricao', 'Descreva o problema com pelo menos 10 caracteres.', descricao]);
+    if (!contato.value.trim()) erros.push(['erro-contato', 'Informe quem vai acompanhar o atendimento.', contato]);
+    if (telefone.value.replace(/\D/g, '').length < 10) erros.push(['erro-telefone', 'Informe um telefone com DDD.', telefone]);
+
+    for (const id of ['erro-equipamento', 'erro-problema', 'erro-descricao', 'erro-contato', 'erro-telefone']) mostrarErro(id, '');
+    form.querySelectorAll('[data-passo]').forEach((p) => p.classList.remove('passo--erro'));
+    for (const [id, texto, campo] of erros) {
+      mostrarErro(id, texto);
+      campo?.closest('[data-passo]')?.classList.add('passo--erro');
+    }
+    erroGeral.hidden = erros.length === 0;
+    if (erros[0]) {
+      const passo = erros[0][2]?.closest<HTMLElement>('[data-passo]');
+      passo?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      erros[0][2]?.focus({ preventScroll: true });
+    }
+    return erros.length === 0;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validar()) return;
+
+    enviar.disabled = true;
+    form.querySelector('[data-enviar-texto]')!.textContent = 'Enviando…';
+    try {
+      const chamado = await abrirChamado({
+        equipamentoId: marcado('equipamento')!.value || null,
+        problema: marcado('problema')!.value as ProblemaId,
+        descricao: descricao.value.trim(),
+        urgente: marcado('urgencia')?.value === 'urgente',
+        contatoNome: contato.value.trim(),
+        contatoTelefone: telefone.value.trim(),
+        // TODO(supabase): enviar as fotos para o armazenamento privado. Na demonstração guardamos só os nomes.
+        anexos: fotos.map((f) => f.arquivo.name),
+      });
+      location.href = `${portalRoutes.chamado(chamado.id)}&novo=1`;
+    } catch {
+      enviar.disabled = false;
+      form.querySelector('[data-enviar-texto]')!.textContent = 'Enviar chamado';
+      erroGeral.querySelector('p')!.textContent = 'Não foi possível enviar agora. Tente de novo em instantes.';
+      erroGeral.hidden = false;
+    }
+  });
+</script>
+
+<style>
+  .opcoes--equip,
+  .opcoes--urgencia {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .opcoes--problema {
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  }
+
+  /* Problemas em blocos */
+  .opcao--tile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-height: 150px;
+    padding: 1rem;
+  }
+
+  .opcao--tile .opcao__check {
+    position: absolute;
+    top: 0.875rem;
+    right: 0.875rem;
+  }
+
+  .opcao--tile:has(input:checked) .p-chip {
+    background: var(--obp-blue);
+    color: var(--white);
+  }
+
+  .opcao--urgente:has(input:checked) {
+    border-color: #c0262d;
+    background: #fff6f6;
+    box-shadow: 0 0 0 1px #c0262d;
+  }
+
+  .opcao--urgente .p-chip {
+    background: #fdecec;
+    color: #c0262d;
+  }
+
+  .opcao--urgente:has(input:checked) .opcao__check {
+    border-color: #c0262d;
+    background: #c0262d;
+  }
+
+  /* Detalhes */
+  .detalhes {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .detalhes__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .detalhes__meta span {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fotos {
+    margin-top: 0.75rem;
+  }
+
+  .fotos__add {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem;
+    border: 1.5px dashed #b8c0d0;
+    border-radius: 16px;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .fotos__add:hover {
+    border-color: var(--obp-blue);
+    background: #f7f9ff;
+  }
+
+  .fotos__add.is-cheio {
+    display: none;
+  }
+
+  .fotos:has(#n-fotos:focus-visible) .fotos__add {
+    outline: 2px solid var(--obp-blue-bright);
+    outline-offset: 2px;
+  }
+
+  .fotos__text {
+    display: grid;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .fotos__text strong {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .fotos__text strong span {
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+
+  .fotos__lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fotos__lista:not(:empty) {
+    margin-top: 0.75rem;
+  }
+
+  .fotos__lista :global(.foto) {
+    position: relative;
+    display: grid;
+    gap: 0.375rem;
+    width: 96px;
+  }
+
+  .fotos__lista :global(.foto img) {
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--obp-mist);
+  }
+
+  .fotos__lista :global(.foto__nome) {
+    overflow: hidden;
+    font-size: 0.6875rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .fotos__lista :global(.foto__remover) {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    box-shadow: 0 0 0 2px var(--white);
+  }
+
+  .fotos__lista :global(.foto__remover svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  #erro-fotos {
+    margin-top: 0.5rem;
+  }
+
+  /* Contato */
+  .contato {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .contato .field-error {
+    margin-top: 0.375rem;
+    padding-left: 0.25rem;
+  }
+
+  .urgente-card {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
+    border-radius: 20px;
+    background: var(--white);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--ink-2);
+    transition: background-color 0.2s ease;
+  }
+
+  .urgente-card:hover {
+    background: #f7f9fc;
+  }
+
+  .urgente-card strong {
+    display: block;
+    font-size: 0.9375rem;
+    color: var(--ink);
+  }
+
+  .urgente-card__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #e7f7ee;
+    color: #157a3e;
+  }
+
+  @media (max-width: 640px) {
+    .opcoes--equip,
+    .opcoes--urgencia,
+    .contato {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .opcoes--problema {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .opcao--tile {
+      min-height: 140px;
+    }
+  }
+</style>

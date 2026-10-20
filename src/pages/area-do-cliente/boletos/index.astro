@@ -1,0 +1,584 @@
+---
+import { ChevronRight, CircleCheckBig, FileText, FileUp, Inbox, Upload } from '@lucide/astro';
+import Portal from '../../../layouts/Portal.astro';
+import SocialIcon from '../../../components/SocialIcon.astro';
+import { company } from '../../../data/site';
+import { demoCliente, portalRoutes } from '../../../data/portal';
+
+const filtros = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'andamento', label: 'Em andamento' },
+  { id: 'entregues', label: 'Entregues' },
+];
+const contratar = `${company.whatsappHref}?text=${encodeURIComponent('Olá! Quero saber sobre o serviço de impressão e entrega de boletos.')}`;
+---
+
+<Portal
+  title="Envio de boletos"
+  heading="Envio de boletos"
+  subheading="Envie os arquivos e acompanhe a impressão e a entrega de cada boleto."
+  active="boletos"
+>
+  {demoCliente.servicoBoletos ? (
+    <>
+      <div class="bol-top">
+        <section class="p-card p-card--dark andamento" aria-labelledby="andamento-titulo">
+          <div class="p-card__head">
+            <h2 id="andamento-titulo" class="p-card__title">Remessa em andamento</h2>
+            <span class="status" data-andamento-status></span>
+          </div>
+
+          <div class="andamento__conteudo" data-andamento>
+            <p class="andamento__nome" data-campo="nome"></p>
+            <p class="andamento__ref" data-campo="referencia"></p>
+            <div class="andamento__trilha" data-andamento-trilha></div>
+            <div class="andamento__progresso">
+              <p><strong data-campo="entregues"></strong> <span data-campo="progressoTexto"></span></p>
+              <div class="andamento__barra" aria-hidden="true"><span data-andamento-barra></span></div>
+            </div>
+            <a class="btn btn--light btn--sm andamento__ver" data-andamento-link>
+              Acompanhar remessa <ChevronRight aria-hidden="true" />
+            </a>
+          </div>
+
+          <div class="andamento__vazio" hidden data-andamento-vazio>
+            <CircleCheckBig aria-hidden="true" />
+            <strong>Tudo entregue</strong>
+            <span>Nenhuma remessa em andamento.</span>
+          </div>
+        </section>
+
+        <section class="p-card mes" aria-labelledby="mes-titulo">
+          <h2 id="mes-titulo" class="p-card__title">Neste mês</h2>
+          <dl class="mes__lista">
+            <div>
+              <dt>Remessas enviadas</dt>
+              <dd data-metrica="remessas">–</dd>
+            </div>
+            <div>
+              <dt>Boletos entregues</dt>
+              <dd data-metrica="entregues">–</dd>
+            </div>
+            <div>
+              <dt>Tempo médio até a entrega</dt>
+              <dd data-metrica="tempo">–</dd>
+            </div>
+          </dl>
+        </section>
+
+        <a class="enviar-card" href={portalRoutes.enviarRemessa}>
+          <span class="enviar-card__icone"><Upload aria-hidden="true" /></span>
+          <strong>Enviar nova remessa</strong>
+          <span>Arquivos .EXT, .TXT, .PDF ou .ZIP de até 50 MB</span>
+        </a>
+      </div>
+
+      <section class="p-card remessas" aria-labelledby="remessas-titulo">
+        <div class="remessas__head">
+          <h2 id="remessas-titulo" class="p-card__title">Remessas</h2>
+          <div class="segmented" role="group" aria-label="Filtrar remessas">
+            {filtros.map((f, i) => (
+              <button type="button" data-filtro={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+                {f.label}
+                <span class="segmented__count" data-conta={f.id}></span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="r-head" aria-hidden="true">
+          <span></span><span>Remessa</span><span>Enviada em</span><span>Andamento</span><span>Status</span><span></span>
+        </div>
+        <ul class="r-lista" data-lista></ul>
+        <div class="p-empty" hidden data-vazio>
+          <Inbox aria-hidden="true" />
+          <strong>Nenhuma remessa neste filtro</strong>
+        </div>
+      </section>
+
+      <template id="tpl-remessa">
+        <li>
+          <a class="r-row" data-link>
+            <span class="p-chip p-chip--sm"><FileText aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="r-row__main">
+              <span class="r-row__titulo" data-campo="titulo"></span>
+              <span class="r-row__muted" data-campo="detalhe"></span>
+            </span>
+            <span class="r-row__data">
+              <span data-campo="data"></span>
+              <span class="r-row__muted" data-campo="quando"></span>
+            </span>
+            <span class="r-row__progresso">
+              <span data-trilha></span>
+              <span class="r-row__muted" data-campo="contagem"></span>
+            </span>
+            <span class="r-row__status"><span class="status" data-status-pill></span></span>
+            <ChevronRight class="r-row__seta" aria-hidden="true" />
+          </a>
+        </li>
+      </template>
+    </>
+  ) : (
+    <section class="p-card sem-servico">
+      <span class="p-chip"><FileUp aria-hidden="true" stroke-width={1.75} /></span>
+      <h2 class="p-card__title">O envio de boletos não faz parte do seu contrato</h2>
+      <p>
+        Imprimimos e entregamos os boletos da sua empresa, com acompanhamento de cada um por aqui. Fale com a gente para
+        incluir o serviço.
+      </p>
+      <a class="btn btn--sm" href={contratar} target="_blank" rel="noopener">
+        <SocialIcon name="whatsapp" size={18} />
+        Falar com a equipe
+      </a>
+    </section>
+  )}
+</Portal>
+
+<script>
+  import { contarBoletos, listarRemessas, resumirRemessas, type Remessa } from '../../../lib/portal/remessas';
+  import { aplicarSelo, clonar, preencher } from '../../../lib/portal/dom';
+  import { formatarCompetencia, formatarData, formatarDuracao, formatarNumero, tempoRelativo } from '../../../lib/portal/formato';
+  import { montarTrilha } from '../../../lib/portal/trilha';
+  import { portalRoutes, remessaRotulo } from '../../../data/portal';
+
+  type Filtro = 'todas' | 'andamento' | 'entregues';
+  const passa: Record<Filtro, (r: Remessa) => boolean> = {
+    todas: () => true,
+    andamento: (r) => r.status !== 'entregue',
+    entregues: (r) => r.status === 'entregue',
+  };
+
+  /** "10 de 24 entregues" ou, antes da conferência, "24 boletos informados". */
+  function contagem(r: Remessa) {
+    const c = contarBoletos(r);
+    if (!r.boletos.length) return `${formatarNumero(c.total)} boletos informados`;
+    return `${formatarNumero(c.entregue)} de ${formatarNumero(c.total)} entregues`;
+  }
+
+  function montarLinha(r: Remessa) {
+    const item = clonar('tpl-remessa');
+    item.querySelector('[data-link]')?.setAttribute('href', portalRoutes.remessa(r.id));
+    aplicarSelo(item.querySelector('[data-status-pill]'), r.status, remessaRotulo(r.status));
+    item.querySelector('[data-trilha]')?.replaceWith(montarTrilha(r.status, { compacta: true }));
+    preencher(item, {
+      titulo: r.empreendimento,
+      detalhe: `${formatarCompetencia(r.referencia)} · #${r.id} · ${r.arquivo.nome}`,
+      data: formatarData(r.enviadoEm),
+      quando: tempoRelativo(r.enviadoEm),
+      contagem: contagem(r),
+    });
+    return item;
+  }
+
+  function montarAndamento(remessas: Remessa[]) {
+    const atual = remessas.find((r) => r.status === 'processando') ?? remessas.find((r) => r.status === 'enviado');
+    const conteudo = document.querySelector<HTMLElement>('[data-andamento]');
+    if (!conteudo) return;
+    if (!atual) {
+      conteudo.hidden = true;
+      document.querySelector<HTMLElement>('[data-andamento-vazio]')!.hidden = false;
+      document.querySelector('[data-andamento-status]')?.remove();
+      return;
+    }
+    const c = contarBoletos(atual);
+    aplicarSelo(document.querySelector('[data-andamento-status]'), atual.status, remessaRotulo(atual.status));
+    preencher(conteudo, {
+      nome: atual.empreendimento,
+      referencia: `${formatarCompetencia(atual.referencia)} · Protocolo #${atual.id}`,
+      entregues: atual.boletos.length ? `${formatarNumero(c.entregue)} de ${formatarNumero(c.total)}` : formatarNumero(c.total),
+      progressoTexto: atual.boletos.length ? 'boletos entregues' : 'boletos aguardando conferência',
+    });
+    conteudo.querySelector('[data-andamento-trilha]')?.replaceChildren(montarTrilha(atual.status));
+    const barra = conteudo.querySelector<HTMLElement>('[data-andamento-barra]');
+    if (barra) barra.style.width = `${c.total ? (c.entregue / c.total) * 100 : 0}%`;
+    conteudo.querySelector('[data-andamento-link]')?.setAttribute('href', portalRoutes.remessa(atual.id));
+  }
+
+  async function iniciar() {
+    if (!document.querySelector('[data-lista]')) return; // cliente sem o serviço
+    const remessas = await listarRemessas();
+    const r = resumirRemessas(remessas);
+
+    montarAndamento(remessas);
+
+    const metricas: Record<string, string> = {
+      remessas: formatarNumero(r.remessasNoMes),
+      entregues: formatarNumero(r.boletosEntreguesNoMes),
+      tempo: r.mediaHorasEntrega === null ? '–' : formatarDuracao(r.mediaHorasEntrega),
+    };
+    for (const [nome, valor] of Object.entries(metricas)) {
+      const el = document.querySelector(`[data-metrica="${nome}"]`);
+      if (el) el.textContent = valor;
+    }
+
+    const botoes = [...document.querySelectorAll<HTMLButtonElement>('[data-filtro]')];
+    const lista = document.querySelector('[data-lista]');
+    const vazio = document.querySelector<HTMLElement>('[data-vazio]')!;
+    let filtro: Filtro = 'todas';
+
+    const render = () => {
+      const visiveis = remessas.filter(passa[filtro]);
+      lista?.replaceChildren(...visiveis.map(montarLinha));
+      vazio.hidden = visiveis.length > 0;
+      botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filtro === filtro)));
+    };
+
+    for (const botao of botoes) {
+      const id = botao.dataset.filtro as Filtro;
+      botao.querySelector('[data-conta]')!.textContent = String(remessas.filter(passa[id]).length);
+      botao.addEventListener('click', () => {
+        filtro = id;
+        render();
+      });
+    }
+    render();
+  }
+
+  iniciar();
+</script>
+
+<style>
+  .bol-top {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3.6fr) minmax(0, 3fr);
+    gap: 1.25rem;
+  }
+
+  /* Remessa em andamento */
+  .andamento {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .andamento__conteudo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .andamento__conteudo[hidden],
+  .andamento__vazio[hidden] {
+    display: none;
+  }
+
+  .andamento__nome {
+    margin-top: 1.25rem;
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .andamento__ref {
+    font-size: 0.875rem;
+    color: #a1a8bd;
+  }
+
+  .andamento__trilha {
+    margin-top: 1.5rem;
+  }
+
+  .andamento__progresso {
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: #a1a8bd;
+  }
+
+  .andamento__progresso strong {
+    font-size: 1rem;
+    color: var(--white);
+  }
+
+  .andamento__barra {
+    height: 6px;
+    margin-top: 0.5rem;
+    border-radius: 6px;
+    background: rgb(255 255 255 / 0.12);
+    overflow: hidden;
+  }
+
+  .andamento__barra span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--grad-brand-dark);
+    transition: width 1.2s var(--ease-out);
+  }
+
+  .andamento__ver {
+    align-self: flex-start;
+    margin-top: 1.5rem;
+  }
+
+  .andamento__vazio {
+    display: grid;
+    flex: 1;
+    place-content: center;
+    justify-items: center;
+    gap: 0.25rem;
+    padding-block: 1.5rem;
+    text-align: center;
+    color: #a1a8bd;
+  }
+
+  .andamento__vazio strong {
+    font-size: 1.25rem;
+    color: var(--white);
+  }
+
+  .andamento__vazio :global(svg) {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.5rem;
+    color: #6ee7a0;
+  }
+
+  /* Números do mês */
+  .mes__lista {
+    display: grid;
+    margin-top: 0.75rem;
+  }
+
+  .mes__lista div {
+    display: grid;
+    gap: 0.125rem;
+    padding-block: 0.875rem;
+  }
+
+  .mes__lista div + div {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .mes__lista dt {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .mes__lista dd {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Atalho para enviar */
+  .enviar-card {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.375rem;
+    padding: 1.5rem;
+    border: 1.5px dashed #b8c0d0;
+    border-radius: 24px;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .enviar-card:hover {
+    border-color: var(--obp-blue);
+    background: rgb(255 255 255 / 0.5);
+  }
+
+  .enviar-card strong {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .enviar-card__icone {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .enviar-card:hover .enviar-card__icone {
+    transform: translateY(-3px);
+  }
+
+  .enviar-card__icone :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Lista de remessas */
+  .remessas {
+    margin-top: 1.25rem;
+  }
+
+  .remessas__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .r-head,
+  .r-lista :global(.r-row) {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 2fr) minmax(0, 0.9fr) minmax(0, 1.2fr) 120px 18px;
+    align-items: center;
+    gap: 1rem;
+    padding-inline: 0.75rem;
+  }
+
+  .r-head {
+    padding-block: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .r-lista {
+    padding: 0;
+    list-style: none;
+  }
+
+  .r-lista :global(li + li) {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .r-lista :global(.r-row) {
+    padding-block: 0.875rem;
+    border-radius: 14px;
+    transition: background-color 0.2s ease;
+  }
+
+  .r-lista :global(.r-row:hover) {
+    background: #f5f7fb;
+  }
+
+  .r-lista :global(.r-row__main),
+  .r-lista :global(.r-row__data) {
+    display: grid;
+    min-width: 0;
+  }
+
+  .r-lista :global(.r-row__titulo) {
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .r-lista :global(.r-row__muted) {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .r-lista :global(.r-row__data) {
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .r-lista :global(.r-row__progresso) {
+    display: grid;
+    justify-items: start;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  .r-lista :global(.r-row__seta) {
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+  }
+
+  .sem-servico {
+    display: grid;
+    justify-items: start;
+    gap: 0.75rem;
+    max-width: 640px;
+  }
+
+  .sem-servico p {
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 1279px) {
+    .bol-top {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .andamento {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .r-head {
+      display: none;
+    }
+
+    /* Cada remessa vira um cartão */
+    .r-lista :global(.r-row) {
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      grid-template-areas:
+        'icone main status'
+        'icone progresso progresso'
+        'icone data data';
+      gap: 0.5rem 0.75rem;
+      padding-inline: 0.5rem;
+    }
+
+    .r-lista :global(.r-row > .p-chip) {
+      grid-area: icone;
+      align-self: start;
+    }
+
+    .r-lista :global(.r-row__main) {
+      grid-area: main;
+    }
+
+    .r-lista :global(.r-row__status) {
+      grid-area: status;
+      align-self: start;
+    }
+
+    .r-lista :global(.r-row__progresso) {
+      grid-area: progresso;
+      grid-auto-flow: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .r-lista :global(.r-row__data) {
+      grid-area: data;
+      display: flex;
+      gap: 0.375rem;
+      font-size: 0.8125rem;
+      color: var(--ink-2);
+    }
+
+    .r-lista :global(.r-row__seta) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .bol-top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .remessas__head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

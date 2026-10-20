@@ -1,0 +1,651 @@
+---
+import { Building, Check, ChevronDown, CircleAlert, CloudUpload, FileText, Info, Send, ShieldCheck, TriangleAlert } from '@lucide/astro';
+import Portal from '../../../../layouts/Portal.astro';
+import { company } from '../../../../data/site';
+import { demoEmpreendimentos, portalRoutes, remessaArquivos } from '../../../../data/portal';
+
+const aceitos = remessaArquivos.extensoes.map((e) => `.${e}`).join(',');
+const novoEmpreendimento = `${company.whatsappHref}?text=${encodeURIComponent('Olá! Preciso cadastrar um novo empreendimento para o envio de boletos.')}`;
+---
+
+<Portal
+  title="Enviar remessa"
+  heading="Enviar remessa de boletos"
+  subheading="Envie o arquivo gerado pelo seu sistema. Você acompanha cada boleto até a entrega."
+  active="boletos"
+  back={{ label: 'Envio de boletos', href: portalRoutes.boletos }}
+>
+  <form class="p-form" novalidate data-enviar-form>
+    <div class="p-form__passos">
+      <section class="p-card passo" aria-labelledby="passo-arquivo" data-passo="arquivo">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>1</span><Check /></span>
+          <div>
+            <h2 id="passo-arquivo" class="p-card__title">Arquivo da remessa</h2>
+            <p class="p-card__sub">Um arquivo por remessa. O arquivo continua igual ao que seu sistema gera.</p>
+          </div>
+        </header>
+
+        <div class="arquivo-area">
+          <label class="drop" for="r-arquivo" data-drop>
+            <span class="drop__icone"><CloudUpload aria-hidden="true" /></span>
+            <strong>Arraste o arquivo para cá ou <span class="drop__link">escolha no computador</span></strong>
+            <small>.EXT, .TXT, .REM, .CSV, .PDF ou .ZIP · até 50 MB</small>
+          </label>
+          <input
+            id="r-arquivo"
+            class="visually-hidden"
+            type="file"
+            accept={aceitos}
+            aria-describedby="erro-arquivo"
+            data-arquivo
+          />
+
+          <div class="arquivo" hidden data-arquivo-card>
+            <span class="p-chip"><FileText aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="arquivo__info">
+              <strong data-campo="nome"></strong>
+              <span data-campo="info"></span>
+              <span class="arquivo__hash" data-hash-linha>
+                <ShieldCheck aria-hidden="true" />
+                <span data-campo="hash"></span>
+              </span>
+            </span>
+            <button class="arquivo__trocar" type="button" data-trocar>Trocar</button>
+          </div>
+
+          <div class="p-banner p-banner--aviso" role="status" hidden data-duplicado>
+            <TriangleAlert aria-hidden="true" />
+            <p data-campo="duplicado"></p>
+          </div>
+          <p class="field-error" id="erro-arquivo" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="p-card passo" aria-labelledby="passo-dados" data-passo="dados">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>2</span><Check /></span>
+          <div>
+            <h2 id="passo-dados" class="p-card__title">Sobre esta remessa</h2>
+            <p class="p-card__sub">Usamos estas informações para conferir se o arquivo chegou completo.</p>
+          </div>
+        </header>
+
+        <fieldset class="opcoes opcoes--empreendimento" aria-describedby="erro-empreendimento">
+          <legend class="passo__legenda">Empreendimento</legend>
+          {demoEmpreendimentos.map((nome) => (
+            <label class="opcao">
+              <input type="radio" name="empreendimento" value={nome} />
+              <span class="p-chip p-chip--sm"><Building aria-hidden="true" stroke-width={1.75} /></span>
+              <span class="opcao__text"><strong>{nome}</strong></span>
+              <span class="opcao__check" aria-hidden="true"><Check /></span>
+            </label>
+          ))}
+        </fieldset>
+        <p class="dados__dica">
+          Não encontrou o empreendimento?{' '}
+          <a href={novoEmpreendimento} target="_blank" rel="noopener">Peça o cadastro</a>
+        </p>
+        <p class="field-error" id="erro-empreendimento" aria-live="polite"></p>
+
+        <div class="dados__campos">
+          <div class="field field--select">
+            <select id="r-referencia" name="referencia" data-referencia></select>
+            <label for="r-referencia">Vencimento dos boletos</label>
+            <ChevronDown class="field__chevron" aria-hidden="true" />
+          </div>
+          <div>
+            <div class="field">
+              <input
+                id="r-quantidade"
+                name="quantidade"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="5000"
+                step="1"
+                placeholder=" "
+                aria-describedby="erro-quantidade"
+                required
+              />
+              <label for="r-quantidade">Quantidade de boletos no arquivo</label>
+            </div>
+            <p class="field-error" id="erro-quantidade" aria-live="polite"></p>
+          </div>
+          <div class="field field--full">
+            <textarea id="r-observacao" name="observacao" rows="3" maxlength="500" placeholder=" "></textarea>
+            <label for="r-observacao">Observação para a equipe (opcional)</label>
+          </div>
+        </div>
+      </section>
+
+      <section class="p-card passo" aria-labelledby="passo-confirmar" data-passo="confirmar">
+        <header class="passo__head">
+          <span class="passo__num" aria-hidden="true"><span>3</span><Check /></span>
+          <div>
+            <h2 id="passo-confirmar" class="p-card__title">Confirme o envio</h2>
+            <p class="p-card__sub">O erro mais comum é mandar o arquivo de outro mês. Vale uma última olhada.</p>
+          </div>
+        </header>
+        <label class="confirma">
+          <input type="checkbox" name="confirmo" aria-describedby="erro-confirmo" data-confirmo />
+          <span class="confirma__caixa" aria-hidden="true"><Check /></span>
+          <span data-confirma-texto>Conferi: este é o arquivo correto de boletos.</span>
+        </label>
+        <p class="field-error" id="erro-confirmo" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <aside class="p-form__lateral">
+      <div class="p-card resumo-envio">
+        <h2 class="p-card__title">Resumo</h2>
+        <dl class="resumo-envio__lista">
+          <div>
+            <dt>Arquivo</dt>
+            <dd data-resumo="arquivo" data-vazio>Nenhum arquivo</dd>
+          </div>
+          <div>
+            <dt>Empreendimento</dt>
+            <dd data-resumo="empreendimento" data-vazio>Não selecionado</dd>
+          </div>
+          <div>
+            <dt>Vencimento</dt>
+            <dd data-resumo="referencia"></dd>
+          </div>
+          <div>
+            <dt>Boletos</dt>
+            <dd data-resumo="quantidade" data-vazio>Não informado</dd>
+          </div>
+        </dl>
+
+        <div class="p-banner p-banner--error resumo-envio__erro" role="alert" hidden data-erro-geral>
+          <CircleAlert aria-hidden="true" />
+          <p>Faltam algumas informações. Confira os campos destacados.</p>
+        </div>
+
+        <button class="btn btn--dark resumo-envio__botao" type="submit" data-enviar>
+          <Send aria-hidden="true" />
+          <span data-enviar-texto>Enviar remessa</span>
+        </button>
+        <p class="resumo-envio__nota">
+          <Info aria-hidden="true" />
+          Você recebe um comprovante com protocolo e acompanha cada boleto em Envio de boletos.
+        </p>
+      </div>
+    </aside>
+  </form>
+</Portal>
+
+<script>
+  import { calcularSha256, enviarRemessa, remessaComMesmoArquivo, validarArquivo } from '../../../../lib/portal/remessas';
+  import { diaDe, formatarCompetencia, formatarData, formatarNumero, formatarTamanho } from '../../../../lib/portal/formato';
+  import { portalRoutes } from '../../../../data/portal';
+
+  const form = document.querySelector<HTMLFormElement>('[data-enviar-form]')!;
+  const input = form.querySelector<HTMLInputElement>('[data-arquivo]')!;
+  const drop = form.querySelector<HTMLElement>('[data-drop]')!;
+  const cartao = form.querySelector<HTMLElement>('[data-arquivo-card]')!;
+  const duplicado = form.querySelector<HTMLElement>('[data-duplicado]')!;
+  const referencia = form.querySelector<HTMLSelectElement>('[data-referencia]')!;
+  const quantidade = form.querySelector<HTMLInputElement>('#r-quantidade')!;
+  const observacao = form.querySelector<HTMLTextAreaElement>('#r-observacao')!;
+  const confirmo = form.querySelector<HTMLInputElement>('[data-confirmo]')!;
+  const erroGeral = form.querySelector<HTMLElement>('[data-erro-geral]')!;
+  const enviar = form.querySelector<HTMLButtonElement>('[data-enviar]')!;
+
+  let arquivo: { nome: string; tamanho: number; sha256: string } | null = null;
+
+  // ---------- Meses de vencimento: o anterior, o atual e os dois próximos (padrão: o próximo) ----------
+  const hoje = new Date();
+  for (let i = -1; i <= 2; i++) {
+    const valor = diaDe(new Date(hoje.getFullYear(), hoje.getMonth() + i, 1)).slice(0, 7);
+    referencia.append(new Option(formatarCompetencia(valor), valor, i === 1, i === 1));
+  }
+
+  // ---------- Erros ----------
+  function mostrarErro(id: string, texto: string) {
+    const out = document.getElementById(id);
+    if (out) out.textContent = texto;
+    if (id === 'erro-quantidade') {
+      quantidade.closest('.field')?.classList.toggle('field--error', Boolean(texto));
+      quantidade.setAttribute('aria-invalid', String(Boolean(texto)));
+    }
+    if (texto) return;
+    const passo = out?.closest('[data-passo]');
+    if (passo && !passo.querySelector('.field-error:not(:empty)')) passo.classList.remove('passo--erro');
+    if (!form.querySelector('.passo--erro')) erroGeral.hidden = true;
+  }
+
+  // ---------- Resumo lateral e passos concluídos ----------
+  const empreendimento = () => form.querySelector<HTMLInputElement>('input[name="empreendimento"]:checked')?.value;
+  const qtd = () => Number(quantidade.value);
+  const qtdValida = () => Number.isInteger(qtd()) && qtd() >= 1 && qtd() <= 5000;
+
+  function atualizar() {
+    const valores: Record<string, string | undefined> = {
+      arquivo: arquivo?.nome,
+      empreendimento: empreendimento(),
+      referencia: formatarCompetencia(referencia.value),
+      quantidade: qtdValida() ? `${formatarNumero(qtd())} boletos` : undefined,
+    };
+    const vazios: Record<string, string> = { arquivo: 'Nenhum arquivo', empreendimento: 'Não selecionado', quantidade: 'Não informado' };
+    for (const [campo, valor] of Object.entries(valores)) {
+      const dd = form.querySelector<HTMLElement>(`[data-resumo="${campo}"]`);
+      if (!dd) continue;
+      dd.toggleAttribute('data-vazio', !valor);
+      dd.textContent = valor ?? vazios[campo];
+    }
+
+    const nomeEmp = empreendimento();
+    form.querySelector('[data-confirma-texto]')!.textContent = nomeEmp
+      ? `Conferi: este é o arquivo de boletos com vencimento em ${formatarCompetencia(referencia.value).toLowerCase()} do ${nomeEmp}.`
+      : 'Conferi: este é o arquivo correto de boletos.';
+
+    const ok: Record<string, boolean> = {
+      arquivo: Boolean(arquivo),
+      dados: Boolean(nomeEmp) && qtdValida(),
+      confirmar: confirmo.checked,
+    };
+    for (const [passo, valido] of Object.entries(ok)) {
+      form.querySelector(`[data-passo="${passo}"]`)?.classList.toggle('passo--ok', valido);
+    }
+  }
+
+  form.addEventListener('change', (e) => {
+    const nome = (e.target as HTMLInputElement | HTMLSelectElement).name;
+    if (nome === 'empreendimento') mostrarErro('erro-empreendimento', '');
+    if (nome === 'confirmo' && confirmo.checked) mostrarErro('erro-confirmo', '');
+    // Trocar mês ou empreendimento muda o que foi conferido: pede a confirmação de novo.
+    if ((nome === 'empreendimento' || nome === 'referencia') && confirmo.checked) confirmo.checked = false;
+    atualizar();
+  });
+
+  form.addEventListener('input', (e) => {
+    if (e.target === quantidade && quantidade.getAttribute('aria-invalid') === 'true') mostrarErro('erro-quantidade', '');
+    atualizar();
+  });
+
+  // ---------- Arquivo ----------
+  async function receber(lista: FileList | null | undefined) {
+    if (!lista?.length) return;
+    if (lista.length > 1) {
+      mostrarErro('erro-arquivo', 'Envie um arquivo por vez. Se forem vários, compacte em um .ZIP.');
+      return;
+    }
+    const escolhido = lista[0];
+    arquivo = null;
+    duplicado.hidden = true;
+    const erro = await validarArquivo(escolhido);
+    if (erro) {
+      mostrarErro('erro-arquivo', erro);
+      form.querySelector('[data-passo="arquivo"]')?.classList.add('passo--erro');
+      mostrarCartao(false);
+      atualizar();
+      return;
+    }
+    mostrarErro('erro-arquivo', '');
+
+    const extensao = escolhido.name.split('.').pop()!.toUpperCase();
+    form.querySelector('[data-campo="nome"]')!.textContent = escolhido.name;
+    form.querySelector('[data-campo="info"]')!.textContent = `${formatarTamanho(escolhido.size)} · ${extensao}`;
+    form.querySelector('[data-campo="hash"]')!.textContent = 'Verificando o arquivo…';
+    mostrarCartao(true);
+
+    const sha256 = await calcularSha256(escolhido);
+    arquivo = { nome: escolhido.name, tamanho: escolhido.size, sha256 };
+    const hash = form.querySelector<HTMLElement>('[data-campo="hash"]')!;
+    hash.textContent = `Arquivo íntegro · código ${sha256.slice(0, 8)}…${sha256.slice(-6)}`;
+    hash.title = `SHA-256: ${sha256}`;
+
+    // Mesmo arquivo já enviado antes? Avisa, mas deixa a decisão com o cliente.
+    const anterior = await remessaComMesmoArquivo(sha256);
+    if (anterior) {
+      form.querySelector('[data-campo="duplicado"]')!.textContent =
+        `Este mesmo arquivo já foi enviado na remessa #${anterior.id}, em ${formatarData(anterior.enviadoEm)}. Confira se não é um envio repetido.`;
+      duplicado.hidden = false;
+    }
+    atualizar();
+  }
+
+  function mostrarCartao(mostrar: boolean) {
+    cartao.hidden = !mostrar;
+    drop.hidden = mostrar;
+  }
+
+  input.addEventListener('change', async () => {
+    await receber(input.files);
+    input.value = '';
+  });
+
+  form.querySelector('[data-trocar]')?.addEventListener('click', () => input.click());
+
+  // Arrastar e soltar. Fora da área, o navegador não abre o arquivo por engano.
+  const temArquivo = (e: DragEvent) => Boolean(e.dataTransfer?.types.includes('Files'));
+  for (const tipo of ['dragenter', 'dragover'] as const) {
+    drop.addEventListener(tipo, (e) => {
+      if (!temArquivo(e)) return;
+      e.preventDefault();
+      drop.classList.add('is-arrastando');
+    });
+  }
+  for (const tipo of ['dragleave', 'drop'] as const) {
+    drop.addEventListener(tipo, () => drop.classList.remove('is-arrastando'));
+  }
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    receber(e.dataTransfer?.files);
+  });
+  window.addEventListener('dragover', (e) => temArquivo(e) && e.preventDefault());
+  window.addEventListener('drop', (e) => temArquivo(e) && e.preventDefault());
+
+  atualizar();
+
+  // ---------- Envio ----------
+  function validar() {
+    const erros: [string, string, HTMLElement | null][] = [];
+    // Se o arquivo escolhido foi recusado, mantém o motivo (ex.: formato não aceito).
+    const motivoArquivo = document.getElementById('erro-arquivo')?.textContent;
+    if (!arquivo) erros.push(['erro-arquivo', motivoArquivo || 'Escolha o arquivo da remessa.', input]);
+    if (!empreendimento()) erros.push(['erro-empreendimento', 'Escolha o empreendimento.', form.querySelector('input[name="empreendimento"]')]);
+    if (!qtdValida()) erros.push(['erro-quantidade', 'Informe quantos boletos tem no arquivo (de 1 a 5.000).', quantidade]);
+    if (!confirmo.checked) erros.push(['erro-confirmo', 'Confirme que conferiu o arquivo.', confirmo]);
+
+    for (const id of ['erro-arquivo', 'erro-empreendimento', 'erro-quantidade', 'erro-confirmo']) mostrarErro(id, '');
+    form.querySelectorAll('[data-passo]').forEach((p) => p.classList.remove('passo--erro'));
+    for (const [id, texto, campo] of erros) {
+      mostrarErro(id, texto);
+      (campo?.closest('[data-passo]') ?? document.getElementById(id)?.closest('[data-passo]'))?.classList.add('passo--erro');
+    }
+    erroGeral.hidden = erros.length === 0;
+    if (erros[0]) {
+      const passo = document.getElementById(erros[0][0])?.closest<HTMLElement>('[data-passo]');
+      passo?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      erros[0][2]?.focus({ preventScroll: true });
+    }
+    return erros.length === 0;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validar() || !arquivo) return;
+
+    enviar.disabled = true;
+    form.querySelector('[data-enviar-texto]')!.textContent = 'Enviando…';
+    try {
+      // TODO(supabase): subir o arquivo para o armazenamento privado e conferir o SHA-256 no servidor.
+      const remessa = await enviarRemessa({
+        empreendimento: empreendimento()!,
+        referencia: referencia.value,
+        arquivo,
+        quantidadeInformada: qtd(),
+        observacao: observacao.value.trim() || undefined,
+      });
+      location.href = `${portalRoutes.remessa(remessa.id)}&novo=1`;
+    } catch {
+      enviar.disabled = false;
+      form.querySelector('[data-enviar-texto]')!.textContent = 'Enviar remessa';
+      erroGeral.querySelector('p')!.textContent = 'Não foi possível enviar agora. Tente de novo em instantes.';
+      erroGeral.hidden = false;
+    }
+  });
+</script>
+
+<style>
+  /* Área de arrastar e soltar */
+  .arquivo-area {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .drop {
+    display: grid;
+    justify-items: center;
+    gap: 0.375rem;
+    padding: 2.25rem 1.5rem;
+    border: 1.5px dashed #b8c0d0;
+    border-radius: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .drop[hidden] {
+    display: none;
+  }
+
+  .drop:hover,
+  .drop.is-arrastando {
+    border-color: var(--obp-blue);
+    background: #f5f8ff;
+  }
+
+  .arquivo-area:has(#r-arquivo:focus-visible) .drop {
+    outline: 2px solid var(--obp-blue-bright);
+    outline-offset: 2px;
+  }
+
+  .drop__icone {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+    background: var(--obp-mist);
+    color: var(--obp-blue);
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .drop.is-arrastando .drop__icone {
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  .drop__icone :global(svg) {
+    width: 26px;
+    height: 26px;
+  }
+
+  .drop strong {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .drop__link {
+    color: var(--obp-blue);
+  }
+
+  .drop small {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  /* Arquivo escolhido */
+  .arquivo {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+
+  .arquivo[hidden] {
+    display: none;
+  }
+
+  .arquivo__info {
+    flex: 1;
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .arquivo__info strong {
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .arquivo__hash {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #157a3e;
+  }
+
+  .arquivo__hash :global(svg) {
+    flex: none;
+    width: 14px;
+    height: 14px;
+  }
+
+  .arquivo__trocar {
+    flex: none;
+    min-height: 36px;
+    padding: 0.375rem 0.875rem;
+    border-radius: 980px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--obp-blue);
+    transition: background-color 0.2s ease;
+  }
+
+  .arquivo__trocar:hover {
+    background: #f5f8ff;
+  }
+
+  /* Dados da remessa */
+  .passo__legenda {
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .opcoes--empreendimento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .opcoes--empreendimento legend {
+    grid-column: 1 / -1;
+  }
+
+  .dados__dica {
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .dados__dica a {
+    color: var(--obp-blue);
+  }
+
+  .dados__dica a:hover {
+    text-decoration: underline;
+  }
+
+  #erro-empreendimento:not(:empty) {
+    margin-top: 0.5rem;
+  }
+
+  .dados__campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .dados__campos .field-error {
+    margin-top: 0.375rem;
+    padding-left: 0.25rem;
+  }
+
+  .dados__campos textarea {
+    min-height: 96px;
+  }
+
+  /* Confirmação */
+  .confirma {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .confirma:has(input:checked) {
+    border-color: var(--obp-blue);
+    background: #f5f8ff;
+  }
+
+  .confirma:has(input:focus-visible) {
+    outline: 2px solid var(--obp-blue-bright);
+    outline-offset: 2px;
+  }
+
+  .confirma input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .confirma__caixa {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin-top: 0.0625rem;
+    border: 1.5px solid var(--line);
+    border-radius: 7px;
+    color: transparent;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .confirma__caixa :global(svg) {
+    width: 14px;
+    height: 14px;
+    stroke-width: 3;
+  }
+
+  .confirma:has(input:checked) .confirma__caixa {
+    border-color: var(--obp-blue);
+    background: var(--obp-blue);
+    color: var(--white);
+  }
+
+  #erro-confirmo:not(:empty) {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .opcoes--empreendimento,
+    .dados__campos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .drop {
+      padding: 1.75rem 1rem;
+    }
+  }
+</style>

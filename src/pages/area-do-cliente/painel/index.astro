@@ -1,0 +1,998 @@
+---
+import { ArrowRight, ArrowUpRight, ChartSpline, ChevronRight, CircleCheckBig, CircleDot, Loader, Plus, Printer, ReceiptText, Timer } from '@lucide/astro';
+import Portal from '../../../layouts/Portal.astro';
+import LinhaChamadoTemplate from '../../../components/portal/LinhaChamadoTemplate.astro';
+import { demoCliente, demoEquipamentos, portalRoutes, prazoHoras } from '../../../data/portal';
+
+const primeiroNome = demoCliente.nome.split(' ')[0];
+const novoPara = (id: string) => `${portalRoutes.novoChamado}?equipamento=${id}`;
+---
+
+<Portal
+  title="Painel"
+  heading={`Olá, ${primeiroNome}!`}
+  subheading={`${demoCliente.empresa} · ${demoEquipamentos.length} equipamentos no contrato`}
+  active="painel"
+>
+  <a class="p-card fatura-aviso" hidden data-fatura-aviso>
+    <span class="p-chip"><ReceiptText aria-hidden="true" stroke-width={1.75} /></span>
+    <span class="fatura-aviso__texto">
+      <strong data-campo="faturaTitulo"></strong>
+      <span data-campo="faturaPrazo"></span>
+    </span>
+    <span class="fatura-aviso__valor" data-campo="faturaValor"></span>
+    <span class="fatura-aviso__ir">Ver fatura <ChevronRight aria-hidden="true" /></span>
+  </a>
+
+  <div class="dash-top">
+    <section class="p-card p-card--dark resumo" aria-labelledby="resumo-titulo">
+      <div class="p-card__head">
+        <h2 id="resumo-titulo" class="p-card__title">Resumo dos chamados</h2>
+        <a class="resumo__link" href={portalRoutes.chamados} aria-label="Ver todos os chamados">
+          <ArrowUpRight aria-hidden="true" />
+        </a>
+      </div>
+
+      <div class="resumo__big">
+        <p><strong data-metrica="total">–</strong><span>chamados<br />no total</span></p>
+        <span class="resumo__sep" aria-hidden="true"></span>
+        <p><strong data-metrica="andamento">–</strong><span>em andamento<br />agora</span></p>
+      </div>
+
+      <div class="resumo__bar" aria-hidden="true"><span data-resumo-bar></span></div>
+
+      <ul class="resumo__tiles">
+        <li>
+          <CircleDot aria-hidden="true" />
+          <strong data-metrica="abertos">–</strong>
+          <span>Aguardando</span>
+        </li>
+        <li>
+          <Loader aria-hidden="true" />
+          <strong data-metrica="emAtendimento">–</strong>
+          <span>Em atendimento</span>
+        </li>
+        <li class="resumo__tile--ok">
+          <CircleCheckBig aria-hidden="true" />
+          <strong data-metrica="resolvidos">–</strong>
+          <span>Resolvidos</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="p-card grafico" aria-labelledby="grafico-titulo">
+      <div class="p-card__head">
+        <div>
+          <h2 id="grafico-titulo" class="p-card__title">Chamados por mês</h2>
+          <p class="p-card__sub">Últimos 6 meses</p>
+        </div>
+        <ChartSpline aria-hidden="true" stroke-width={1.75} />
+      </div>
+      <figure class="grafico__fig">
+        <div class="grafico__plot" data-grafico>
+          <svg class="grafico__svg" viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="grafico-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1b80f5" stop-opacity="0.22"></stop>
+                <stop offset="100%" stop-color="#1b80f5" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path class="grafico__area" data-grafico-area fill="url(#grafico-area)"></path>
+            <path class="grafico__line" data-grafico-line vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <span class="grafico__dot" data-grafico-dot hidden></span>
+          <span class="grafico__tip" data-grafico-tip hidden></span>
+        </div>
+        <figcaption class="visually-hidden" data-grafico-desc></figcaption>
+      </figure>
+      <ol class="grafico__meses" data-grafico-meses aria-hidden="true"></ol>
+    </section>
+
+    <section class="p-card prazo" aria-labelledby="prazo-titulo">
+      <div class="p-card__head">
+        <div>
+          <h2 id="prazo-titulo" class="p-card__title">Atendimento</h2>
+          <p class="p-card__sub">Resolvidos em até {prazoHoras / 24} dias</p>
+        </div>
+        <Timer aria-hidden="true" stroke-width={1.75} />
+      </div>
+      <div class="prazo__ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="prazo__track" cx="60" cy="60" r="50"></circle>
+          <circle class="prazo__value" cx="60" cy="60" r="50" data-prazo-anel></circle>
+        </svg>
+        <p class="prazo__center">
+          <strong data-metrica="noPrazo">–</strong>
+          <span>no prazo</span>
+        </p>
+      </div>
+      <dl class="prazo__dados">
+        <div>
+          <dt>Tempo médio</dt>
+          <dd data-metrica="media">–</dd>
+        </div>
+        <div>
+          <dt>Resolvidos</dt>
+          <dd data-metrica="resolvidos">–</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="dash-mid">
+    <section class="p-card equip" aria-labelledby="equip-titulo">
+      <div class="p-card__head">
+        <h2 id="equip-titulo" class="p-card__title">Seus equipamentos</h2>
+        <span class="equip__count">{demoEquipamentos.length}</span>
+      </div>
+      <ul class="equip__list">
+        {demoEquipamentos.map((e) => (
+          <li class="equip__item" data-equipamento={e.id}>
+            <span class="p-chip p-chip--sm"><Printer aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="equip__info">
+              <strong>{e.modelo}</strong>
+              <span>{e.local}</span>
+            </span>
+            <span class="equip__state" data-equipamento-estado>Funcionando</span>
+            <a class="equip__add" href={novoPara(e.id)} title="Abrir chamado" aria-label={`Abrir chamado para ${e.modelo}`}>
+              <Plus aria-hidden="true" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="andamento" aria-labelledby="andamento-titulo">
+      <div class="andamento__head">
+        <h2 id="andamento-titulo" class="p-section-title">
+          Em andamento <span class="andamento__count" data-andamento-total></span>
+        </h2>
+        <a class="p-link" href={portalRoutes.chamados}>Ver todos <ChevronRight aria-hidden="true" /></a>
+      </div>
+      <div class="andamento__grid" data-andamento>
+        <a class="andamento__novo" href={portalRoutes.novoChamado}>
+          <Plus aria-hidden="true" />
+          Abrir chamado
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <section class="p-card historico" aria-labelledby="historico-titulo">
+    <div class="p-card__head historico__head">
+      <h2 id="historico-titulo" class="p-card__title">Últimos chamados</h2>
+      <a class="p-link" href={portalRoutes.chamados}>Ver histórico completo <ChevronRight aria-hidden="true" /></a>
+    </div>
+    <div class="p-rows__head" aria-hidden="true">
+      <span>Nº</span><span>Problema</span><span>Equipamento</span><span>Aberto em</span><span>Status</span><span></span>
+    </div>
+    <ul class="p-rows" data-historico></ul>
+  </section>
+
+  <template id="tpl-andamento">
+    <a class="p-card ativo" data-link>
+      <span class="ativo__top">
+        <span class="p-chip" data-icone-problema></span>
+        <span class="ativo__id" data-campo="protocolo"></span>
+      </span>
+      <span class="ativo__titulo" data-campo="titulo"></span>
+      <span class="ativo__eq" data-campo="equipamento"></span>
+      <span class="ativo__status"><span class="status" data-status-pill></span></span>
+      <span class="ativo__foot">
+        <span class="ativo__quando" data-campo="quando"></span>
+        <span class="ativo__go"><ArrowRight aria-hidden="true" /></span>
+      </span>
+    </a>
+  </template>
+
+  <LinhaChamadoTemplate />
+</Portal>
+
+<script>
+  import { listarChamados, resumir } from '../../../lib/portal/chamados';
+  import { faturaEmDestaque, listarFaturas, prazoFatura, statusDaFatura, tituloFatura } from '../../../lib/portal/faturas';
+  import { aplicarIcone, aplicarStatus, clonar, preencher } from '../../../lib/portal/dom';
+  import { formatarDia, formatarDuracao, formatarMoeda, mesCurto, protocolo, tempoRelativo } from '../../../lib/portal/formato';
+  import { montarLinha } from '../../../lib/portal/linhas';
+  import { equipamentoPorId, portalRoutes, problemaTitulo, statusInfo } from '../../../data/portal';
+
+  const numero = new Intl.NumberFormat('pt-BR');
+
+  function metrica(nome: string, valor: string) {
+    document.querySelectorAll(`[data-metrica="${nome}"]`).forEach((el) => {
+      el.textContent = valor;
+    });
+  }
+
+  /** Curva suave passando pelos pontos (Catmull-Rom convertida em Bézier). */
+  function curva(pontos: [number, number][]) {
+    return pontos.reduce((d, [x, y], i, p) => {
+      if (i === 0) return `M${x},${y}`;
+      const [x0, y0] = p[i - 2] ?? p[i - 1];
+      const [x1, y1] = p[i - 1];
+      const [x3, y3] = p[i + 1] ?? [x, y];
+      const c1 = [x1 + (x - x0) / 6, y1 + (y - y0) / 6];
+      const c2 = [x - (x3 - x1) / 6, y - (y3 - y1) / 6];
+      return `${d} C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${x},${y}`;
+    }, '');
+  }
+
+  function desenharGrafico(meses: { inicio: Date; total: number }[]) {
+    const W = 300;
+    const H = 120;
+    const topo = 22;
+    const max = Math.max(1, ...meses.map((m) => m.total));
+    const pontos = meses.map((m, i): [number, number] => [
+      (i / (meses.length - 1)) * W,
+      H - 6 - (m.total / max) * (H - 6 - topo),
+    ]);
+    const linha = curva(pontos);
+    document.querySelector('[data-grafico-line]')?.setAttribute('d', linha);
+    document.querySelector('[data-grafico-area]')?.setAttribute('d', `${linha} L${W},${H} L0,${H} Z`);
+
+    // Destaque no mês atual, posicionado em % para não distorcer com o SVG esticado.
+    const [x, y] = pontos[pontos.length - 1];
+    const dot = document.querySelector<HTMLElement>('[data-grafico-dot]');
+    const tip = document.querySelector<HTMLElement>('[data-grafico-tip]');
+    for (const el of [dot, tip]) {
+      if (!el) continue;
+      el.style.left = `${(x / W) * 100}%`;
+      el.style.top = `${(y / H) * 100}%`;
+      el.hidden = false;
+    }
+    if (tip) tip.textContent = `${meses[meses.length - 1].total} este mês`;
+
+    const rotulos = document.querySelector('[data-grafico-meses]');
+    rotulos?.replaceChildren(
+      ...meses.map((m, i) => {
+        const li = document.createElement('li');
+        li.textContent = mesCurto(m.inicio);
+        if (i === meses.length - 1) li.className = 'is-atual';
+        return li;
+      }),
+    );
+    const desc = document.querySelector('[data-grafico-desc]');
+    if (desc) desc.textContent = meses.map((m) => `${mesCurto(m.inicio)}: ${m.total}`).join(', ');
+  }
+
+  async function montarPainel() {
+    const chamados = await listarChamados();
+    const r = resumir(chamados);
+    const andamento = r.abertos + r.emAtendimento;
+
+    metrica('total', numero.format(r.total));
+    metrica('andamento', numero.format(andamento));
+    metrica('abertos', numero.format(r.abertos));
+    metrica('emAtendimento', numero.format(r.emAtendimento));
+    metrica('resolvidos', numero.format(r.resolvidos));
+    metrica('media', r.mediaHoras === null ? '–' : formatarDuracao(r.mediaHoras));
+    metrica('noPrazo', r.noPrazo === null ? '–' : `${Math.round(r.noPrazo * 100)}%`);
+
+    const barra = document.querySelector<HTMLElement>('[data-resumo-bar]');
+    if (barra && r.total) barra.style.width = `${(r.resolvidos / r.total) * 100}%`;
+
+    const anel = document.querySelector<SVGCircleElement>('[data-prazo-anel]');
+    if (anel && r.noPrazo !== null) {
+      const c = 2 * Math.PI * 50;
+      anel.style.strokeDasharray = `${c * r.noPrazo} ${c}`;
+    }
+
+    desenharGrafico(r.meses);
+
+    // Equipamentos com chamado ativo mostram o status do chamado.
+    const ativos = chamados.filter((c) => statusInfo[c.status].ativo);
+    document.querySelectorAll<HTMLElement>('[data-equipamento]').forEach((item) => {
+      const chamado = ativos.find((c) => c.equipamentoId === item.dataset.equipamento);
+      const estado = item.querySelector<HTMLElement>('[data-equipamento-estado]');
+      if (chamado && estado) {
+        estado.classList.add('status');
+        aplicarStatus(estado, chamado.status);
+      }
+    });
+
+    // Cartões dos chamados em andamento, antes do cartão "Abrir chamado".
+    const grade = document.querySelector('[data-andamento]');
+    const novo = grade?.querySelector('.andamento__novo');
+    for (const chamado of ativos.slice(0, 3)) {
+      const card = clonar('tpl-andamento');
+      const equipamento = equipamentoPorId(chamado.equipamentoId);
+      card.querySelector('a')?.setAttribute('href', portalRoutes.chamado(chamado.id));
+      aplicarIcone(card, chamado.problema);
+      aplicarStatus(card.querySelector('[data-status-pill]'), chamado.status);
+      preencher(card, {
+        protocolo: protocolo(chamado.id),
+        titulo: problemaTitulo(chamado.problema),
+        equipamento: equipamento ? `${equipamento.modelo} · ${equipamento.local}` : 'Equipamento não informado',
+        quando: `Aberto ${tempoRelativo(chamado.criadoEm)}`,
+      });
+      grade?.insertBefore(card, novo ?? null);
+    }
+    const total = document.querySelector('[data-andamento-total]');
+    if (total) total.textContent = `(${ativos.length})`;
+
+    document.querySelector('[data-historico]')?.replaceChildren(...chamados.slice(0, 5).map(montarLinha));
+  }
+
+  /** Faixa no topo quando há fatura vencida ou em aberto. */
+  async function avisoDeFatura() {
+    const fatura = faturaEmDestaque(await listarFaturas());
+    const aviso = document.querySelector<HTMLAnchorElement>('[data-fatura-aviso]');
+    if (!fatura || !aviso) return;
+    const vencida = statusDaFatura(fatura) === 'vencida';
+    aviso.href = portalRoutes.fatura(fatura.id);
+    aviso.classList.toggle('is-vencida', vencida);
+    preencher(aviso, {
+      faturaTitulo: vencida ? `Fatura vencida: ${tituloFatura(fatura)}` : `Fatura de ${tituloFatura(fatura).toLowerCase()}`,
+      faturaPrazo: `${formatarDia(fatura.vencimento)} · ${prazoFatura(fatura).toLowerCase()}`,
+      faturaValor: formatarMoeda(fatura.valor),
+    });
+    aviso.hidden = false;
+  }
+
+  montarPainel();
+  avisoDeFatura();
+</script>
+
+<style>
+  /* Aviso de fatura */
+  .fatura-aviso {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-block: 1rem;
+    transition: box-shadow 0.25s ease;
+  }
+
+  .fatura-aviso[hidden] {
+    display: none;
+  }
+
+  .fatura-aviso:hover {
+    box-shadow: 0 14px 32px -20px rgb(10 22 51 / 0.35);
+  }
+
+  .fatura-aviso.is-vencida .p-chip {
+    background: #fdecec;
+    color: #c0262d;
+  }
+
+  .fatura-aviso__texto {
+    flex: 1;
+    display: grid;
+    min-width: 0;
+    font-size: 0.875rem;
+    color: var(--ink-2);
+  }
+
+  .fatura-aviso__texto strong {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+
+  .fatura-aviso.is-vencida .fatura-aviso__texto span {
+    color: #c0262d;
+  }
+
+  .fatura-aviso__valor {
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fatura-aviso__ir {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--obp-blue);
+    white-space: nowrap;
+  }
+
+  .fatura-aviso__ir :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dash-top {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3.2fr);
+    gap: 1.25rem;
+  }
+
+  .dash-mid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+
+  .historico {
+    margin-top: 1.25rem;
+  }
+
+  /* Resumo (cartão escuro) */
+  .resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .resumo__link {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: -0.375rem -0.375rem 0 0;
+    border-radius: 50%;
+    color: #c9cfdf;
+    transition: background-color 0.2s ease;
+  }
+
+  .resumo__link:hover {
+    background: rgb(255 255 255 / 0.1);
+    color: var(--white);
+  }
+
+  .resumo__link :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .resumo__big {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .resumo__big p {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .resumo__big strong {
+    font-size: clamp(2.5rem, 2rem + 1.4vw, 3.25rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .resumo__big span {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    color: #a1a8bd;
+  }
+
+  .resumo__sep {
+    align-self: stretch;
+    width: 1px;
+    background: rgb(255 255 255 / 0.16);
+  }
+
+  .resumo__bar {
+    height: 4px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.12);
+    overflow: hidden;
+  }
+
+  .resumo__bar span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--grad-brand-dark);
+    transition: width 1.2s var(--ease-out);
+  }
+
+  .resumo__tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: auto;
+    padding: 0;
+    list-style: none;
+  }
+
+  .resumo__tiles li {
+    display: grid;
+    justify-items: center;
+    gap: 0.25rem;
+    padding: 0.875rem 0.5rem;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 0.08);
+    text-align: center;
+  }
+
+  .resumo__tiles li.resumo__tile--ok {
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  .resumo__tiles :global(svg) {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 0.25rem;
+    color: #a9d2ff;
+  }
+
+  .resumo__tile--ok :global(svg) {
+    color: #157a3e;
+  }
+
+  .resumo__tiles strong {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .resumo__tiles span {
+    font-size: 0.75rem;
+    color: #a1a8bd;
+  }
+
+  .resumo__tile--ok span {
+    color: var(--ink-2);
+  }
+
+  /* Gráfico */
+  .grafico {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grafico__fig {
+    flex: 1;
+    display: flex;
+    min-height: 150px;
+    margin-top: 1.25rem;
+  }
+
+  .grafico__plot {
+    position: relative;
+    flex: 1;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grafico__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .grafico__line {
+    fill: none;
+    stroke: var(--navy);
+    stroke-width: 2.25;
+    stroke-linecap: round;
+  }
+
+  .grafico__dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 3px solid var(--white);
+    border-radius: 50%;
+    background: var(--navy);
+    box-shadow: 0 2px 6px rgb(10 22 51 / 0.3);
+    transform: translate(-50%, -50%);
+  }
+
+  .grafico__tip {
+    position: absolute;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transform: translate(-100%, calc(-100% - 12px));
+  }
+
+  .grafico__meses {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .grafico__meses :global(li) {
+    width: 0;
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .grafico__meses :global(.is-atual) {
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  /* Anel de prazo */
+  .prazo {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .prazo__ring {
+    position: relative;
+    width: min(150px, 100%);
+    margin: 1.25rem auto 0;
+  }
+
+  .prazo__ring svg {
+    width: 100%;
+    height: auto;
+    transform: rotate(-90deg);
+  }
+
+  .prazo__track,
+  .prazo__value {
+    fill: none;
+    stroke-width: 10;
+  }
+
+  .prazo__track {
+    stroke: var(--obp-mist);
+  }
+
+  .prazo__value {
+    stroke: var(--obp-blue);
+    stroke-linecap: round;
+    stroke-dasharray: 0 400;
+    transition: stroke-dasharray 1.2s var(--ease-out);
+  }
+
+  .prazo__center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+  }
+
+  .prazo__center strong {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .prazo__center span {
+    font-size: 0.75rem;
+    color: var(--ink-2);
+  }
+
+  .prazo__dados {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
+  }
+
+  .prazo__dados div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .prazo__dados dt {
+    color: var(--ink-2);
+  }
+
+  .prazo__dados dd {
+    font-weight: 600;
+  }
+
+  /* Equipamentos */
+  .equip__count {
+    display: grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding-inline: 0.5rem;
+    border-radius: 980px;
+    background: var(--obp-mist);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+
+  .equip__list {
+    display: grid;
+    margin-top: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .equip__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'icon info add'
+      'icon state add';
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.375rem;
+    padding-block: 0.875rem;
+  }
+
+  .equip__item + .equip__item {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .equip__item > .p-chip {
+    grid-area: icon;
+    align-self: start;
+  }
+
+  .equip__info {
+    grid-area: info;
+    display: grid;
+    min-width: 0;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .equip__info strong {
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .equip__state {
+    grid-area: state;
+    justify-self: start;
+    font-size: 0.8125rem;
+  }
+
+  /* Sem chamado ativo: "Funcionando" em verde. Com chamado, vira o selo de status. */
+  .equip__state:not(.status) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #157a3e;
+  }
+
+  .equip__state:not(.status)::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .equip__add {
+    grid-area: add;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .equip__add:hover {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .equip__add :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Chamados em andamento */
+  .andamento__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .andamento__count {
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  .andamento__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 1rem;
+  }
+
+  .andamento__grid :global(.ativo) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-height: 220px;
+    transition:
+      transform 0.3s var(--ease-out),
+      box-shadow 0.3s ease;
+  }
+
+  .andamento__grid :global(.ativo:hover) {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px -24px rgb(10 22 51 / 0.35);
+  }
+
+  .andamento__grid :global(.ativo__top) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .andamento__grid :global(.ativo__status) {
+    margin-top: 0.625rem;
+  }
+
+  .andamento__grid :global(.ativo__id) {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+
+  .andamento__grid :global(.ativo__titulo) {
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .andamento__grid :global(.ativo__eq) {
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .andamento__grid :global(.ativo__foot) {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 1rem;
+  }
+
+  .andamento__grid :global(.ativo__quando) {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .andamento__grid :global(.ativo__go) {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin: 0 -0.5rem -0.5rem 0;
+    border-radius: 14px;
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .andamento__grid :global(.ativo__go svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .andamento__novo {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.5rem;
+    min-height: 220px;
+    border: 1.5px dashed #b8c0d0;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .andamento__novo:hover {
+    border-color: var(--obp-blue);
+    background: rgb(255 255 255 / 0.5);
+    color: var(--obp-blue);
+  }
+
+  .andamento__novo :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Histórico */
+  .historico__head {
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  @media (max-width: 1279px) {
+    .dash-top {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .resumo {
+      grid-column: 1 / -1;
+    }
+
+    .dash-mid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .equip__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.5rem;
+    }
+
+    .equip__item:nth-child(2) {
+      border-top: 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .fatura-aviso {
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+    }
+
+    .fatura-aviso__texto {
+      flex-basis: calc(100% - 60px);
+    }
+
+    .fatura-aviso__valor {
+      margin-left: 60px;
+    }
+
+    .fatura-aviso__ir {
+      margin-left: auto;
+    }
+
+    .dash-top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .resumo__big {
+      gap: 1rem;
+    }
+
+    .equip__list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .equip__item:nth-child(2) {
+      border-top: 1px solid var(--obp-mist);
+    }
+
+    .historico__head {
+      flex-wrap: wrap;
+    }
+  }
+</style>

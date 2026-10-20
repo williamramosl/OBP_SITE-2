@@ -1,0 +1,11 @@
+---
+// Banco de ícones copiado pelo JavaScript ao montar listas e cartões (ver lib/portal/dom.ts).
+import ProblemaIcone from './ProblemaIcone.astro';
+import { problemas } from '../../data/portal';
+---
+
+<template id="portal-icones">
+  {problemas.map((p) => (
+    <span data-icone={p.id}><ProblemaIcone problema={p.id} /></span>
+  ))}
+</template>

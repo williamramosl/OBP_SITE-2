@@ -1,0 +1,167 @@
+---
+import { Image } from 'astro:assets';
+import PrintDashboard from '../PrintDashboard.astro';
+import { solutions, solutionHref, proposalHref } from '../../data/solutions';
+---
+
+<section class="tiles" aria-label="Soluções">
+  <div class="tiles__grid container-wide">
+    {solutions.map((s, i) => {
+      const v = s.visual;
+      return (
+        <article class={`tile tile--${s.theme}`} data-reveal style={`--reveal-delay: ${(i % 2) * 0.08}s`}>
+          <div class="tile__copy">
+            <h2 class="tile__title">{s.name}</h2>
+            <p class="tile__tagline">{s.tagline}</p>
+            <div class="actions tile__actions">
+              <a class={`btn btn--sm ${s.theme === 'light' ? '' : 'btn--light'}`} href={solutionHref(s.slug)}>
+                Saiba mais<span class="visually-hidden"> sobre {s.name}</span>
+              </a>
+              <a class="btn btn--sm btn--outline" href={proposalHref(s.slug)}>
+                Proposta<span class="visually-hidden"> de {s.name}</span>
+              </a>
+            </div>
+          </div>
+          <div class="tile__visual">
+            {'image' in v ? (
+              <Image
+                src={v.image}
+                alt={v.alt}
+                widths={[480, 720, 960, 1280]}
+                sizes="(max-width: 833px) 100vw, 50vw"
+                class="tile__img"
+                style={`object-position: ${v.position ?? '50% 50%'}`}
+              />
+            ) : (
+              <PrintDashboard />
+            )}
+          </div>
+        </article>
+      );
+    })}
+  </div>
+</section>
+
+<style>
+  .tiles {
+    padding-block: 12px;
+  }
+
+  .tiles__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: clamp(520px, 44vw, 640px);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    /* Mantém o canto arredondado recortando a foto enquanto ela anima (Safari) */
+    isolation: isolate;
+    text-align: center;
+  }
+
+  .tile--light {
+    background: var(--obp-mist);
+    color: var(--ink);
+    --tile-bg: var(--obp-mist);
+  }
+
+  .tile--dark {
+    background: var(--navy);
+    color: var(--white);
+    --tile-bg: var(--navy);
+  }
+
+  .tile--deep {
+    background: #05080f;
+    color: var(--white);
+    --tile-bg: #05080f;
+  }
+
+  .tile__copy {
+    position: relative;
+    z-index: 1;
+    padding: clamp(2.5rem, 4vw, 3.25rem) 1.5rem 1.5rem;
+  }
+
+  .tile__title {
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .tile__tagline {
+    margin-top: 0.5rem;
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem);
+    line-height: 1.38;
+    opacity: 0.82;
+  }
+
+  .tile__actions {
+    margin-top: 1.25rem;
+    gap: 0.75rem;
+  }
+
+  .tile--dark :global(.btn--outline),
+  .tile--deep :global(.btn--outline) {
+    color: var(--white);
+  }
+
+  .tile--dark :global(.btn--outline:hover),
+  .tile--deep :global(.btn--outline:hover) {
+    background: var(--white);
+    color: var(--obp-blue);
+  }
+
+  .tile__visual {
+    position: relative;
+    flex: 1;
+    min-height: 240px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    /* O zoom do hover fica contido na área da foto, sem a borda de cima vazar para o texto */
+    overflow: hidden;
+  }
+
+  /* Funde a borda de cima da foto com o fundo do bloco */
+  .tile__visual::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 35%;
+    z-index: 1;
+    background: linear-gradient(var(--tile-bg), transparent);
+    pointer-events: none;
+  }
+
+  .tile :global(.tile__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s var(--ease-out);
+  }
+
+  .tile:hover :global(.tile__img) {
+    transform: scale(1.03);
+  }
+
+  @media (max-width: 833px) {
+    .tiles__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tile {
+      min-height: 500px;
+    }
+  }
+</style>

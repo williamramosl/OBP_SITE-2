@@ -1,0 +1,64 @@
+---
+import { CircleCheck, ChevronRight } from '@lucide/astro';
+import Base from '../../layouts/Base.astro';
+import { company } from '../../data/site';
+---
+
+<Base title="Mensagem enviada | Office Brasil Print" noindex>
+  <section class="thanks section--mist">
+    <div class="thanks__inner container">
+      <CircleCheck class="thanks__icon" aria-hidden="true" stroke-width={1.25} />
+      <h1 class="headline">Mensagem enviada.</h1>
+      <p class="lead thanks__lead">Obrigado pelo contato. Nossa equipe vai retornar em breve.</p>
+      <div class="actions thanks__actions">
+        <a class="btn" href="/">Voltar ao início</a>
+        <a class="link" href={company.whatsappHref} target="_blank" rel="noopener">
+          Prefere falar agora? WhatsApp <ChevronRight aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .thanks {
+    min-height: calc(100svh - var(--nav-h) - 160px);
+    display: grid;
+    place-items: center;
+    text-align: center;
+  }
+
+  .thanks__inner {
+    display: grid;
+    justify-items: center;
+    padding-block: 6rem;
+  }
+
+  .thanks :global(.thanks__icon) {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1.5rem;
+    color: var(--obp-blue);
+  }
+
+  .thanks__lead {
+    margin-top: 1rem;
+  }
+
+  .thanks__actions {
+    margin-top: 2rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .thanks :global(.thanks__icon) {
+      animation: thanks-pop 0.9s var(--ease-out) both;
+    }
+  }
+
+  @keyframes thanks-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+</style>

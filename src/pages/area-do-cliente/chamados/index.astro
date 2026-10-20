@@ -1,0 +1,182 @@
+---
+import { Inbox, Search } from '@lucide/astro';
+import Portal from '../../../layouts/Portal.astro';
+import LinhaChamadoTemplate from '../../../components/portal/LinhaChamadoTemplate.astro';
+
+const filtros = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'andamento', label: 'Em andamento' },
+  { id: 'resolvidos', label: 'Resolvidos' },
+  { id: 'cancelados', label: 'Cancelados' },
+];
+---
+
+<Portal
+  title="Chamados"
+  heading="Chamados"
+  subheading="Abra e acompanhe os atendimentos técnicos da sua empresa."
+  active="chamados"
+>
+  <section class="p-card lista" aria-label="Lista de chamados">
+    <div class="lista__toolbar">
+      <div class="segmented" role="group" aria-label="Filtrar chamados">
+        {filtros.map((f, i) => (
+          <button type="button" data-filtro={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {f.label}
+            <span class="segmented__count" data-conta={f.id}></span>
+          </button>
+        ))}
+      </div>
+      <label class="busca">
+        <Search aria-hidden="true" />
+        <span class="visually-hidden">Buscar chamados</span>
+        <input id="busca" type="search" placeholder="Buscar por nº ou equipamento" autocomplete="off" data-busca />
+      </label>
+    </div>
+
+    <div class="p-rows__head" aria-hidden="true">
+      <span>Nº</span><span>Problema</span><span>Equipamento</span><span>Aberto em</span><span>Status</span><span></span>
+    </div>
+    <ul class="p-rows" data-lista aria-live="polite"></ul>
+
+    <div class="p-empty" hidden data-vazio>
+      <Inbox aria-hidden="true" />
+      <strong>Nenhum chamado encontrado</strong>
+      <span>Tente outro filtro ou termo de busca.</span>
+    </div>
+  </section>
+
+  <LinhaChamadoTemplate />
+</Portal>
+
+<script>
+  import { listarChamados, type Chamado } from '../../../lib/portal/chamados';
+  import { montarLinha } from '../../../lib/portal/linhas';
+  import { equipamentoPorId, problemaTitulo, statusInfo } from '../../../data/portal';
+
+  type Filtro = 'todos' | 'andamento' | 'resolvidos' | 'cancelados';
+
+  const passa: Record<Filtro, (c: Chamado) => boolean> = {
+    todos: () => true,
+    andamento: (c) => statusInfo[c.status].ativo,
+    resolvidos: (c) => c.status === 'resolvido',
+    cancelados: (c) => c.status === 'cancelado',
+  };
+
+  const normalizar = (texto: string) =>
+    texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  const textoBusca = (c: Chamado) => {
+    const eq = equipamentoPorId(c.equipamentoId);
+    return normalizar([c.id, problemaTitulo(c.problema), c.descricao, eq?.modelo, eq?.local, eq?.serie].join(' '));
+  };
+
+  const botoes = [...document.querySelectorAll<HTMLButtonElement>('[data-filtro]')];
+  const busca = document.querySelector<HTMLInputElement>('[data-busca]');
+  const lista = document.querySelector('[data-lista]');
+  const vazio = document.querySelector<HTMLElement>('[data-vazio]');
+
+  const params = new URLSearchParams(location.search);
+  let filtro: Filtro = (params.get('filtro') as Filtro) in passa ? (params.get('filtro') as Filtro) : 'todos';
+  let chamados: Chamado[] = [];
+
+  function render() {
+    const termo = normalizar(busca?.value.trim() ?? '');
+    const visiveis = chamados.filter((c) => passa[filtro](c) && (!termo || textoBusca(c).includes(termo)));
+    lista?.replaceChildren(...visiveis.map(montarLinha));
+    if (vazio) vazio.hidden = visiveis.length > 0;
+    botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filtro === filtro)));
+  }
+
+  botoes.forEach((botao) =>
+    botao.addEventListener('click', () => {
+      filtro = botao.dataset.filtro as Filtro;
+      const url = new URL(location.href);
+      if (filtro === 'todos') url.searchParams.delete('filtro');
+      else url.searchParams.set('filtro', filtro);
+      history.replaceState(null, '', url);
+      render();
+    }),
+  );
+  busca?.addEventListener('input', render);
+
+  async function iniciar() {
+    chamados = await listarChamados();
+    for (const id of Object.keys(passa) as Filtro[]) {
+      const total = chamados.filter(passa[id]).length;
+      const el = document.querySelector(`[data-conta="${id}"]`);
+      if (el) el.textContent = String(total);
+      // "Cancelados" só aparece quando existe algum.
+      if (id === 'cancelados') botoes.find((b) => b.dataset.filtro === id)?.toggleAttribute('hidden', total === 0);
+    }
+    render();
+    if (location.hash === '#busca') busca?.focus();
+  }
+
+  iniciar();
+</script>
+
+<style>
+  .lista {
+    padding-top: 1.25rem;
+  }
+
+  .lista__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .busca {
+    position: relative;
+    flex: 0 1 320px;
+    display: flex;
+    align-items: center;
+  }
+
+  .busca :global(svg) {
+    position: absolute;
+    left: 0.875rem;
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .busca input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .busca input:focus {
+    outline: none;
+    border-color: var(--obp-blue-hover);
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgb(15 71 202 / 0.15);
+  }
+
+  @media (max-width: 760px) {
+    .lista__toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .busca {
+      flex-basis: auto;
+    }
+  }
+</style>

@@ -1,0 +1,195 @@
+---
+import Logo from './Logo.astro';
+import SocialIcon from './SocialIcon.astro';
+import { company } from '../data/site';
+import { solutions, solutionHref } from '../data/solutions';
+
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: 'Soluções',
+    links: solutions.map((s) => ({ label: s.name, href: solutionHref(s.slug) })),
+  },
+  {
+    title: 'Empresa',
+    links: [
+      { label: 'Quem somos', href: '/empresa/' },
+      { label: 'Setores atendidos', href: '/#setores' },
+      { label: 'Fabricantes parceiros', href: '/#parceiros' },
+    ],
+  },
+  {
+    title: 'Atendimento',
+    links: [
+      { label: 'Solicite uma proposta', href: '/contato/' },
+      { label: 'WhatsApp', href: company.whatsappHref, external: true },
+      { label: 'Área do Cliente', href: company.clientAreaHref },
+    ],
+  },
+  {
+    title: 'Contato',
+    links: [
+      { label: company.phoneDisplay, href: company.phoneHref },
+      { label: company.email, href: `mailto:${company.email}` },
+      { label: 'Como chegar', href: company.mapsHref, external: true },
+    ],
+  },
+];
+---
+
+<footer class="gfoot">
+  <div class="container">
+    <p class="gfoot__note">
+      Brother, Canon, HP, Kyocera, Ricoh e Samsung são marcas registradas de seus respectivos fabricantes.
+    </p>
+
+    <div class="gfoot__grid">
+      {columns.map((col) => (
+        <div class="gfoot__col">
+          <h2 class="gfoot__title">{col.title}</h2>
+          <ul>
+            {col.links.map((l) => (
+              <li>
+                <a href={l.href} {...('external' in l && l.external ? { target: '_blank', rel: 'noopener' } : {})}>
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <div class="gfoot__bottom">
+      <a href="/" class="gfoot__logo" aria-label="Office Brasil Print, página inicial">
+        <Logo variant="mono" />
+      </a>
+      <p class="gfoot__legal">
+        Copyright © {year} {company.name}. Todos os direitos reservados.<span class="gfoot__sep" aria-hidden="true">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+        <span class="gfoot__id">{company.legalId}</span>
+      </p>
+      <ul class="gfoot__social" aria-label="Redes sociais">
+        <li><a href={company.social.instagram} target="_blank" rel="noopener" aria-label="Instagram"><SocialIcon name="instagram" /></a></li>
+        <li><a href={company.whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp"><SocialIcon name="whatsapp" /></a></li>
+        <li><a href={company.social.linkedin} target="_blank" rel="noopener" aria-label="LinkedIn"><SocialIcon name="linkedin" /></a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .gfoot {
+    background: #f5f5f7;
+    color: var(--ink-2);
+    font-size: var(--fs-small);
+    line-height: 1.34;
+    letter-spacing: -0.01em;
+    padding-block: 1.25rem 1.5rem;
+  }
+
+  .gfoot a {
+    color: #424245;
+    overflow-wrap: anywhere;
+  }
+
+  .gfoot a:hover {
+    color: var(--obp-blue);
+    text-decoration: underline;
+  }
+
+  .gfoot__note {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .gfoot__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding-block: 1.5rem 2rem;
+  }
+
+  .gfoot__title {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.625rem;
+  }
+
+  .gfoot__col ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .gfoot__bottom {
+    display: flex;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .gfoot__logo {
+    display: block;
+    width: 44px;
+    color: var(--ink-3) !important;
+  }
+
+  .gfoot__legal {
+    flex: 1;
+  }
+
+  .gfoot__social {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  .gfoot__social a {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--ink-2);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .gfoot__social a:hover {
+    background: var(--obp-mist);
+    color: var(--obp-blue);
+  }
+
+  @media (max-width: 833px) {
+    .gfoot__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem 1rem;
+    }
+
+    .gfoot__bottom {
+      flex-wrap: wrap;
+    }
+
+    .gfoot__legal {
+      order: 3;
+      flex-basis: 100%;
+    }
+
+    .gfoot__social {
+      margin-left: auto;
+    }
+
+    .gfoot__sep {
+      display: none;
+    }
+
+    .gfoot__id {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  }
+</style>

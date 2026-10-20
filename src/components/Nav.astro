@@ -1,0 +1,432 @@
+---
+import { ChevronRight } from '@lucide/astro';
+import Logo from './Logo.astro';
+import { company, nav } from '../data/site';
+import { solutions, solutionHref } from '../data/solutions';
+
+interface Props {
+  sticky?: boolean;
+}
+
+const { sticky = true } = Astro.props;
+const current = Astro.url.pathname;
+const isCurrent = (href: string) => current.startsWith(href);
+---
+
+<header class:list={['gnav', { 'gnav--static': !sticky }]} data-gnav>
+  <nav class="gnav__bar" aria-label="Navegação principal">
+    <a href="/" class="gnav__logo" aria-label="Office Brasil Print, página inicial">
+      <Logo class="gnav__logo-svg" />
+    </a>
+
+    <ul class="gnav__links">
+      <li class="gnav__item gnav__item--flyout">
+        <a href="/solucoes/" aria-current={isCurrent('/solucoes/') ? 'page' : undefined}>Soluções</a>
+        <div class="gnav__flyout">
+          <div class="gnav__flyout-inner container">
+            <div>
+              <p class="gnav__flyout-label">Soluções</p>
+              <ul class="gnav__flyout-primary">
+                {solutions.map((s) => (
+                  <li><a href={solutionHref(s.slug)}>{s.name}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p class="gnav__flyout-label">Atendimento</p>
+              <ul class="gnav__flyout-secondary">
+                <li><a href="/contato/">Solicite uma proposta</a></li>
+                <li><a href={company.whatsappHref} target="_blank" rel="noopener">WhatsApp</a></li>
+                <li><a href={company.clientAreaHref}>Área do Cliente</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+      {nav.slice(1).map((item) => (
+        <li class="gnav__item">
+          <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+        </li>
+      ))}
+      <li class="gnav__item">
+        <a href={company.clientAreaHref} aria-current={isCurrent(company.clientAreaHref) ? 'page' : undefined}>
+          Área do Cliente
+        </a>
+      </li>
+    </ul>
+
+    <a class="gnav__cta" href="/contato/">Fale conosco</a>
+
+    <button class="gnav__toggle" type="button" aria-expanded="false" aria-controls="gnav-menu" data-gnav-toggle>
+      <span class="visually-hidden">Abrir menu</span>
+      <span class="gnav__toggle-line gnav__toggle-line--top" aria-hidden="true"></span>
+      <span class="gnav__toggle-line gnav__toggle-line--bottom" aria-hidden="true"></span>
+    </button>
+  </nav>
+
+  <div class="gnav__menu" id="gnav-menu" data-gnav-menu>
+    <div class="container">
+      <p class="gnav__flyout-label">Soluções</p>
+      <ul class="gnav__menu-primary">
+        {solutions.map((s) => (
+          <li><a href={solutionHref(s.slug)}>{s.name}</a></li>
+        ))}
+      </ul>
+      <ul class="gnav__menu-secondary">
+        {nav.slice(1).map((item) => (
+          <li><a href={item.href}>{item.label} <ChevronRight aria-hidden="true" /></a></li>
+        ))}
+        <li>
+          <a href={company.clientAreaHref}>
+            Área do Cliente <ChevronRight aria-hidden="true" />
+          </a>
+        </li>
+      </ul>
+      <a class="btn gnav__menu-cta" href="/contato/">Solicite uma proposta</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-gnav]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-gnav-toggle]');
+  const label = toggle?.querySelector('.visually-hidden');
+
+  const setOpen = (open: boolean) => {
+    header?.classList.toggle('is-open', open);
+    document.documentElement.classList.toggle('gnav-locked', open);
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (label) label.textContent = open ? 'Fechar menu' : 'Abrir menu';
+  };
+
+  toggle?.addEventListener('click', () => setOpen(!header?.classList.contains('is-open')));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+  matchMedia('(min-width: 834px)').addEventListener('change', (e) => {
+    if (e.matches) setOpen(false);
+  });
+
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>
+
+<style>
+  .gnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+  }
+
+  .gnav--static {
+    position: relative;
+  }
+
+  .gnav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgb(251 251 253 / 0.8);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+
+  .gnav.is-scrolled::before {
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.08);
+  }
+
+  /* Três colunas: as laterais têm a mesma largura (1fr), então os links ficam no centro exato da tela
+     mesmo com a logo e o botão tendo tamanhos diferentes. */
+  .gnav__bar {
+    height: var(--nav-h);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+    padding-inline: clamp(1rem, 3vw, 2.5rem);
+  }
+
+  .gnav__logo {
+    justify-self: start;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .gnav__logo :global(.gnav__logo-svg) {
+    height: 32px;
+    width: auto;
+  }
+
+  .gnav__links {
+    display: flex;
+    justify-content: center;
+    gap: clamp(1.5rem, 2.6vw, 2.75rem);
+    list-style: none;
+    padding: 0;
+    height: 100%;
+  }
+
+  .gnav__item {
+    display: flex;
+    align-items: center;
+  }
+
+  .gnav__item > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    height: 100%;
+    font-weight: 500;
+    color: rgb(0 0 0 / 0.78);
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
+
+  .gnav__item > a:hover,
+  .gnav__item > a[aria-current='page'] {
+    color: var(--obp-blue);
+  }
+
+  .gnav__cta {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0.5rem 1.25rem;
+    border-radius: 980px;
+    background: var(--obp-blue);
+    color: var(--white);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+  }
+
+  .gnav__cta:hover {
+    background: var(--obp-blue-hover);
+  }
+
+  /* Flyout de Soluções (desktop) */
+  .gnav__flyout {
+    position: absolute;
+    top: var(--nav-h);
+    left: 0;
+    right: 0;
+    background: rgb(251 251 253 / 0.97);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 24px 40px -24px rgb(0 0 0 / 0.18);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.35s var(--ease-out),
+      visibility 0s linear 0.35s;
+  }
+
+  .gnav__item--flyout:hover .gnav__flyout,
+  .gnav__item--flyout:focus-within .gnav__flyout {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.08s, 0.08s, 0s;
+  }
+
+  .gnav__flyout-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 3rem;
+    padding-block: 2.5rem 3.25rem;
+  }
+
+  .gnav__flyout-label {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    margin-bottom: 0.875rem;
+  }
+
+  .gnav__flyout-primary,
+  .gnav__flyout-secondary {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .gnav__flyout-primary a {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .gnav__flyout-secondary a {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .gnav__flyout a:hover {
+    color: var(--obp-blue);
+  }
+
+  /* Botão do menu mobile: duas linhas que viram um X */
+  .gnav__toggle {
+    display: none;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+  }
+
+  .gnav__toggle-line {
+    position: absolute;
+    top: calc(50% - 0.75px);
+    left: 13px;
+    width: 18px;
+    height: 1.5px;
+    border-radius: 1px;
+    background: var(--ink);
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .gnav__toggle-line--top {
+    transform: translateY(-3.5px);
+  }
+
+  .gnav__toggle-line--bottom {
+    transform: translateY(3.5px);
+  }
+
+  .gnav.is-open .gnav__toggle-line--top {
+    transform: rotate(45deg);
+  }
+
+  .gnav.is-open .gnav__toggle-line--bottom {
+    transform: rotate(-45deg);
+  }
+
+  .gnav__menu {
+    display: none;
+  }
+
+  @media (max-width: 833px) {
+    .gnav__links,
+    .gnav__cta {
+      display: none;
+    }
+
+    .gnav__bar {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .gnav__logo :global(.gnav__logo-svg) {
+      height: 28px;
+    }
+
+    .gnav__toggle {
+      display: block;
+    }
+
+    .gnav.is-open::before {
+      background: rgb(251 251 253);
+    }
+
+    .gnav__menu {
+      display: block;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      height: calc(100dvh - var(--nav-h));
+      overflow-y: auto;
+      background: rgb(251 251 253);
+      padding-block: 1.5rem 3rem;
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity 0.3s ease,
+        visibility 0s linear 0.3s;
+    }
+
+    .gnav.is-open .gnav__menu {
+      visibility: visible;
+      opacity: 1;
+      transition-delay: 0s;
+    }
+
+    .gnav__menu-primary,
+    .gnav__menu-secondary {
+      list-style: none;
+      padding: 0;
+    }
+
+    .gnav__menu-primary a {
+      display: block;
+      padding-block: 0.3rem;
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .gnav__menu-secondary {
+      margin-top: 2rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .gnav__menu-secondary a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-block: 0.875rem;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.0625rem;
+      font-weight: 500;
+    }
+
+    .gnav__menu-secondary :global(svg) {
+      width: 1.1em;
+      height: 1.1em;
+      color: var(--ink-3);
+    }
+
+    .gnav__menu-cta {
+      margin-top: 2rem;
+      width: 100%;
+      justify-content: center;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .gnav__menu li {
+        opacity: 0;
+        transform: translateY(-6px);
+        transition:
+          opacity 0.3s ease,
+          transform 0.4s var(--ease-out);
+      }
+
+      .gnav.is-open .gnav__menu li {
+        opacity: 1;
+        transform: none;
+      }
+
+      .gnav.is-open .gnav__menu-primary li:nth-child(2) { transition-delay: 0.03s; }
+      .gnav.is-open .gnav__menu-primary li:nth-child(3) { transition-delay: 0.06s; }
+      .gnav.is-open .gnav__menu-primary li:nth-child(4) { transition-delay: 0.09s; }
+      .gnav.is-open .gnav__menu-secondary li { transition-delay: 0.12s; }
+    }
+  }
+
+  :global(html.gnav-locked) {
+    overflow: hidden;
+  }
+</style>

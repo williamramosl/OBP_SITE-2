@@ -1,0 +1,252 @@
+---
+import { Image } from 'astro:assets';
+import { Check, ChevronRight } from '@lucide/astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import PrintDashboard from '../../components/PrintDashboard.astro';
+import HowItWorks from '../../components/sections/HowItWorks.astro';
+import FinalCta from '../../components/sections/FinalCta.astro';
+import { proposalHref, solutionHref, solutions } from '../../data/solutions';
+---
+
+<Base
+  title="Soluções | Office Brasil Print"
+  description="Outsourcing de impressão, gestão de impressão, GED e assistência técnica. Soluções que funcionam sozinhas ou juntas para sua empresa imprimir melhor e gastar menos."
+>
+  <PageHero
+    eyebrow="Soluções"
+    title="Tudo para imprimir melhor. E gastar menos."
+    lead="Quatro soluções que funcionam sozinhas ou juntas, do equipamento ao documento digital."
+  >
+    <ul class="chapters">
+      {solutions.map((s) => (
+        <li>
+          <a class="chapter" href={`#${s.slug}`}>
+            <span class="chapter__icon">
+              <s.icon aria-hidden="true" stroke-width={1.5} />
+            </span>
+            <span class="chapter__label">{s.short}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </PageHero>
+
+  <div class="rows container">
+    {solutions.map((s, i) => (
+      <section id={s.slug} class="row" aria-labelledby={`${s.slug}-title`}>
+        <div class:list={['row__media', `row__media--${s.theme}`]} data-reveal>
+          {'image' in s.visual ? (
+            <Image
+              src={s.visual.image}
+              alt={s.visual.alt}
+              widths={[480, 720, 960, 1280]}
+              sizes="(max-width: 833px) 100vw, 540px"
+              class="row__img"
+              style={`object-position: ${s.visual.position ?? '50% 50%'}`}
+            />
+          ) : (
+            <PrintDashboard />
+          )}
+        </div>
+        <div class="row__copy" data-reveal style="--reveal-delay: 0.08s">
+          <p class="eyebrow row__eyebrow">
+            <s.icon aria-hidden="true" stroke-width={1.75} />
+            {String(i + 1).padStart(2, '0')}
+          </p>
+          <h2 id={`${s.slug}-title`} class="row__title">{s.name}</h2>
+          <p class="row__tagline">{s.tagline}</p>
+          <ul class="row__highlights">
+            {s.highlights.map((h) => (
+              <li>
+                <Check aria-hidden="true" stroke-width={2.25} />
+                {h}
+              </li>
+            ))}
+          </ul>
+          <div class="actions row__actions">
+            <a class="btn" href={solutionHref(s.slug)}>
+              Saiba mais<span class="visually-hidden"> sobre {s.name}</span>
+            </a>
+            <a class="link" href={proposalHref(s.slug)}>
+              Solicitar proposta <ChevronRight aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <div class="section--mist">
+    <HowItWorks />
+  </div>
+
+  <FinalCta />
+</Base>
+
+<style>
+  /* Navegação por ícones, como a "chapter nav" da Apple */
+  .chapters {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem clamp(1.5rem, 5vw, 3.5rem);
+    margin-top: 3rem;
+  }
+
+  .chapter {
+    display: grid;
+    justify-items: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .chapter__icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--obp-mist);
+    color: var(--obp-blue);
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      transform 0.35s var(--ease-out);
+  }
+
+  .chapter__icon :global(svg) {
+    width: 30px;
+    height: 30px;
+  }
+
+  .chapter:hover .chapter__icon {
+    background: var(--obp-blue);
+    color: var(--white);
+    transform: translateY(-3px);
+  }
+
+  /* Linhas alternadas */
+  .rows {
+    display: grid;
+    gap: clamp(4.5rem, 10vw, 8rem);
+    padding-block: clamp(2rem, 4vw, 3rem) clamp(5rem, 10vw, 8.5rem);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: center;
+  }
+
+  .row:nth-child(even) .row__media {
+    order: 2;
+  }
+
+  .row__media {
+    position: relative;
+    aspect-ratio: 5 / 4;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--obp-mist);
+  }
+
+  .row__media--dark,
+  .row__media--deep {
+    background:
+      radial-gradient(80% 70% at 50% 100%, rgb(27 128 245 / 0.28), transparent 70%),
+      var(--navy);
+    display: grid;
+    place-items: center;
+  }
+
+  .row :global(.row__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .row__media :global(.dash) {
+    margin: 0;
+  }
+
+  .row__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row__eyebrow :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .row__title {
+    margin-top: 0.75rem;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .row__tagline {
+    margin-top: 0.625rem;
+    font-size: var(--fs-lead);
+    line-height: 1.35;
+    color: var(--ink-2);
+  }
+
+  .row__highlights {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.625rem;
+    margin-top: 1.75rem;
+  }
+
+  .row__highlights li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .row__highlights :global(svg) {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--obp-blue);
+  }
+
+  .row__actions {
+    justify-content: flex-start;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 833px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .row:nth-child(even) .row__media {
+      order: 0;
+    }
+
+    .row__media {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+    }
+
+    .row__media--dark {
+      aspect-ratio: auto;
+      padding-block: 2.5rem;
+    }
+  }
+</style>

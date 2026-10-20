@@ -1,0 +1,294 @@
+---
+import { ArrowUpRight, ChevronDown, ChevronRight, Mail, MapPin, Phone } from '@lucide/astro';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SocialIcon from '../../components/SocialIcon.astro';
+import { company } from '../../data/site';
+import { solutions } from '../../data/solutions';
+
+// Em desenvolvimento aponta para o localhost; no build, para o domínio configurado em astro.config.mjs.
+const thanksUrl = new URL('/contato/obrigado/', Astro.url).href;
+---
+
+<Base
+  title="Contato | Office Brasil Print"
+  description="Fale com a Office Brasil Print. Solicite uma proposta de outsourcing de impressão, gestão de impressão, GED ou assistência técnica."
+>
+  <PageHero
+    eyebrow="Contato"
+    title="Vamos conversar."
+    lead="Conte o que a sua empresa precisa. Um consultor da Office Brasil Print retorna o seu contato."
+    theme="mist"
+  />
+
+  <section class="contact section--mist" aria-label="Formas de contato">
+    <div class="contact__grid container">
+      <form class="cform" action={`https://formsubmit.co/${company.formEmail}`} method="POST" data-reveal>
+        <h2 class="cform__title">Envie uma mensagem</h2>
+
+        <div class="cform__grid">
+          <div class="field">
+            <input id="f-nome" name="nome" type="text" autocomplete="name" placeholder=" " required />
+            <label for="f-nome">Nome</label>
+          </div>
+          <div class="field">
+            <input id="f-empresa" name="empresa" type="text" autocomplete="organization" placeholder=" " />
+            <label for="f-empresa">Empresa (opcional)</label>
+          </div>
+          <div class="field">
+            <input id="f-email" name="email" type="email" autocomplete="email" placeholder=" " required />
+            <label for="f-email">E-mail</label>
+          </div>
+          <div class="field">
+            <input id="f-telefone" name="telefone" type="tel" autocomplete="tel" placeholder=" " />
+            <label for="f-telefone">Telefone (opcional)</label>
+          </div>
+          <div class="field field--full field--select">
+            <select id="f-interesse" name="interesse" data-interest>
+              {solutions.map((s) => <option value={s.name} data-slug={s.slug}>{s.name}</option>)}
+              <option value="Outro assunto" selected>Outro assunto</option>
+            </select>
+            <label for="f-interesse">Tenho interesse em</label>
+            <ChevronDown class="field__chevron" aria-hidden="true" />
+          </div>
+          <div class="field field--full">
+            <textarea id="f-mensagem" name="mensagem" rows="5" placeholder=" " required></textarea>
+            <label for="f-mensagem">Mensagem</label>
+          </div>
+        </div>
+
+        <input type="hidden" name="_subject" value="Novo contato pelo site" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next" value={thanksUrl} />
+        <div class="visually-hidden" aria-hidden="true">
+          <label for="f-honey">Não preencha este campo</label>
+          <input id="f-honey" type="text" name="_honey" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="cform__footer">
+          <button class="btn" type="submit">Enviar mensagem</button>
+          <p class="cform__note">
+            Ao enviar, você concorda em ser contatado pela Office Brasil Print sobre a sua solicitação.
+          </p>
+        </div>
+      </form>
+
+      <aside class="channels" aria-label="Outros canais">
+        <a class="channel channel--primary" href={company.whatsappHref} target="_blank" rel="noopener" data-reveal>
+          <span class="channel__icon"><SocialIcon name="whatsapp" size={22} /></span>
+          <span class="channel__body">
+            <span class="channel__title">WhatsApp</span>
+            <span class="channel__text">Fale direto com a nossa equipe comercial.</span>
+          </span>
+          <ChevronRight class="channel__arrow" aria-hidden="true" />
+        </a>
+
+        <div class="channel-group" data-reveal style="--reveal-delay: 0.06s">
+          <a class="channel" href={company.phoneHref}>
+            <span class="channel__icon"><Phone aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="channel__body">
+              <span class="channel__title">Telefone</span>
+              <span class="channel__text">{company.phoneDisplay}</span>
+            </span>
+          </a>
+          <a class="channel" href={`mailto:${company.email}`}>
+            <span class="channel__icon"><Mail aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="channel__body">
+              <span class="channel__title">E-mail</span>
+              <span class="channel__text">{company.email}</span>
+            </span>
+          </a>
+          <a class="channel" href={company.mapsHref} target="_blank" rel="noopener">
+            <span class="channel__icon"><MapPin aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="channel__body">
+              <span class="channel__title">Como chegar</span>
+              <span class="channel__text">Ver no Google Maps</span>
+            </span>
+            <ArrowUpRight class="channel__arrow" aria-hidden="true" />
+          </a>
+        </div>
+
+        <div class="client-box" data-reveal style="--reveal-delay: 0.12s">
+          <p class="client-box__title">Já é cliente?</p>
+          <p class="client-box__text">Consulte faturas, abra chamados e envie arquivos pela Área do Cliente.</p>
+          <a class="link" href={company.clientAreaHref}>
+            Acessar a Área do Cliente <ChevronRight aria-hidden="true" />
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Pré-seleciona o interesse quando o visitante chega de uma página de solução (?interesse=slug).
+  const slug = new URLSearchParams(location.search).get('interesse');
+  const select = document.querySelector<HTMLSelectElement>('[data-interest]');
+  const option = slug && select?.querySelector<HTMLOptionElement>(`option[data-slug="${CSS.escape(slug)}"]`);
+  if (select && option) select.value = option.value;
+</script>
+
+<style>
+  .contact {
+    padding-bottom: clamp(5rem, 10vw, 8.5rem);
+  }
+
+  .contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* Formulário */
+  .cform {
+    padding: clamp(1.75rem, 4vw, 3rem);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+  }
+
+  .cform__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .cform__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+    margin-top: 1.75rem;
+  }
+
+  .cform__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    margin-top: 1.75rem;
+  }
+
+  .cform__note {
+    flex: 1 1 240px;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  /* Canais */
+  .channels {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .channel-group {
+    border-radius: var(--radius-md);
+    background: var(--white);
+    overflow: hidden;
+  }
+
+  .channel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.125rem 1.25rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .channel-group .channel + .channel {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .channel:hover {
+    background: #f7f9fc;
+  }
+
+  .channel__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    color: var(--obp-blue);
+  }
+
+  .channel__icon :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .channel__body {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+  }
+
+  .channel__title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .channel__text {
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+
+  .channel :global(.channel__arrow) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+  }
+
+  .channel--primary {
+    border-radius: var(--radius-md);
+    background: var(--obp-blue);
+    color: var(--white);
+    padding: 1.5rem 1.25rem;
+  }
+
+  .channel--primary:hover {
+    background: var(--obp-blue-hover);
+  }
+
+  .channel--primary .channel__icon {
+    background: rgb(255 255 255 / 0.14);
+    color: var(--white);
+  }
+
+  .channel--primary .channel__text,
+  .channel--primary :global(.channel__arrow) {
+    color: rgb(255 255 255 / 0.8);
+  }
+
+  .client-box {
+    padding: 1.5rem 1.25rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+  }
+
+  .client-box__title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .client-box__text {
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 900px) {
+    .contact__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .cform__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

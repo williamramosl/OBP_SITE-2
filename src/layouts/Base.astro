@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import BaseHead from '../components/BaseHead.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Páginas com navegação local própria (ex.: soluções) deixam o menu global rolar junto com a página */
+  stickyNav?: boolean;
+  noindex?: boolean;
+}
+
+const {
+  stickyNav = true,
+  noindex = false,
+  title = 'Office Brasil Print | Outsourcing de impressão para empresas',
+  description = 'Outsourcing de impressão, gestão de impressão, GED e assistência técnica especializada. Mais de 20 anos ajudando empresas a imprimir com menos custo.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <BaseHead title={title} description={description} noindex={noindex} />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <Nav sticky={stickyNav} />
+    <main id="conteudo">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      const reveal = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-visible');
+            reveal.unobserve(entry.target);
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((el) => reveal.observe(el));
+
+      // Contadores: o HTML já traz o valor final (sem JS ou com movimento reduzido fica estático).
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const format = new Intl.NumberFormat('pt-BR');
+      const counters = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            counters.unobserve(entry.target);
+            const el = entry.target as HTMLElement;
+            const target = Number(el.dataset.count);
+            const duration = 1600;
+            const start = performance.now();
+            const tick = (now: number) => {
+              const t = Math.min((now - start) / duration, 1);
+              const eased = 1 - Math.pow(1 - t, 4);
+              el.textContent = format.format(Math.round(target * eased));
+              if (t < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          }
+        },
+        { threshold: 0.6 },
+      );
+      if (!reduceMotion) {
+        document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => counters.observe(el));
+      }
+    </script>
+  </body>
+</html>

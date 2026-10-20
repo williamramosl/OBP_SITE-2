@@ -1,0 +1,507 @@
+---
+import { ArrowUpRight, CircleAlert, Eye, EyeOff, FileUp, Info, Lock, ReceiptText, Wrench } from '@lucide/astro';
+import Base from '../../layouts/Base.astro';
+import Logo from '../../components/Logo.astro';
+import { company } from '../../data/site';
+import { portalDemo, portalRoutes } from '../../data/portal';
+
+const features = [
+  { icon: ReceiptText, title: 'Faturas', text: 'Notas fiscais e boletos sempre à mão, com o status de cada pagamento.' },
+  { icon: Wrench, title: 'Chamados técnicos', text: 'Abra um chamado em segundos e acompanhe cada etapa do atendimento.' },
+  { icon: FileUp, title: 'Envio de boletos', text: 'Envie os arquivos para impressão com comprovante de recebimento.' },
+];
+
+const message = (text: string) => `${company.whatsappHref}?text=${encodeURIComponent(text)}`;
+const resetHref = message('Olá! Preciso redefinir minha senha da Área do Cliente.');
+const accessHref = message('Olá! Sou cliente e gostaria de solicitar acesso à Área do Cliente.');
+---
+
+<Base
+  title="Área do Cliente | Office Brasil Print"
+  description="Acesse a Área do Cliente da Office Brasil Print para consultar faturas, abrir chamados técnicos e enviar arquivos de boletos."
+>
+  <section class="client" aria-labelledby="client-title">
+    <div class="client__grid container">
+      <header class="client__intro">
+        <p class="eyebrow">Área do Cliente</p>
+        <h1 id="client-title" class="client__title">
+          Tudo da sua conta{' '}
+          <span class="text-gradient">em um só lugar.</span>
+        </h1>
+      </header>
+
+      <ul class="client__features" aria-label="O que você encontra na Área do Cliente">
+        {features.map((f) => (
+          <li class="feature">
+            <span class="feature__icon"><f.icon aria-hidden="true" stroke-width={1.75} /></span>
+            <span class="feature__body">
+              <span class="feature__title">{f.title}</span>
+              <span class="feature__text">{f.text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="login">
+        <form class="login__form" novalidate data-login data-demo={portalDemo ? portalRoutes.painel : undefined}>
+          <Logo class="login__logo" />
+          <h2 class="login__title">Entrar na sua conta</h2>
+          <p class="login__subtitle">Use o e-mail cadastrado pela equipe {company.name}.</p>
+
+          <div class="login__fields">
+            <div>
+              <div class="field">
+                <input
+                  id="l-email"
+                  name="email"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="username"
+                  autocapitalize="none"
+                  spellcheck="false"
+                  placeholder=" "
+                  aria-describedby="l-email-erro"
+                  required
+                />
+                <label for="l-email">E-mail</label>
+              </div>
+              <p class="field-error" id="l-email-erro" aria-live="polite"></p>
+            </div>
+
+            <div>
+              <div class="field field--password">
+                <input
+                  id="l-senha"
+                  name="senha"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder=" "
+                  aria-describedby="l-senha-erro"
+                  required
+                />
+                <label for="l-senha">Senha</label>
+                <button class="login__reveal" type="button" aria-label="Mostrar senha" aria-pressed="false" data-reveal-password>
+                  <Eye class="login__reveal-show" aria-hidden="true" />
+                  <EyeOff class="login__reveal-hide" aria-hidden="true" />
+                </button>
+              </div>
+              <p class="field-error" id="l-senha-erro" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <a class="login__forgot" href={resetHref} target="_blank" rel="noopener">Esqueci minha senha</a>
+
+          <div class="login__notice" role="status" hidden data-login-notice>
+            <Info aria-hidden="true" />
+            <p>
+              A nova Área do Cliente está em implantação. Enquanto isso, acesse pelo{' '}
+              <a href={company.legacyClientAreaHref} target="_blank" rel="noopener">portal atual</a>.
+            </p>
+          </div>
+
+          <button class="btn login__submit" type="submit">Entrar</button>
+
+          <div class="login__help">
+            <p>
+              Ainda não tem acesso?{' '}
+              <a href={accessHref} target="_blank" rel="noopener">Fale com a nossa equipe</a>
+            </p>
+            <p>
+              Procurando o portal anterior?{' '}
+              <a href={company.legacyClientAreaHref} target="_blank" rel="noopener">
+                Acessar o PWS<ArrowUpRight aria-hidden="true" />
+              </a>
+            </p>
+          </div>
+
+          <p class="login__secure">
+            <Lock aria-hidden="true" />
+            Acesso individual por usuário e conexão protegida.
+          </p>
+          <template id="l-error-icon"><CircleAlert aria-hidden="true" width={14} height={14} /></template>
+        </form>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-login]');
+  const email = form?.querySelector<HTMLInputElement>('#l-email');
+  const senha = form?.querySelector<HTMLInputElement>('#l-senha');
+  const reveal = form?.querySelector<HTMLButtonElement>('[data-reveal-password]');
+  const notice = form?.querySelector<HTMLElement>('[data-login-notice]');
+  const errorIcon = document.querySelector<HTMLTemplateElement>('#l-error-icon');
+
+  // Mostrar/ocultar senha mantendo o cursor no campo.
+  reveal?.addEventListener('click', () => {
+    if (!senha) return;
+    const show = senha.type === 'password';
+    senha.type = show ? 'text' : 'password';
+    reveal.setAttribute('aria-pressed', String(show));
+    reveal.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+    senha.focus();
+  });
+
+  const setError = (input: HTMLInputElement, text: string) => {
+    const out = document.getElementById(input.getAttribute('aria-describedby') ?? '');
+    input.closest('.field')?.classList.toggle('field--error', Boolean(text));
+    input.setAttribute('aria-invalid', String(Boolean(text)));
+    if (!out) return;
+    out.replaceChildren();
+    if (text) out.append(errorIcon?.content.cloneNode(true) ?? '', text);
+  };
+
+  const validate = () => {
+    if (!email || !senha) return false;
+    const emailValue = email.value.trim();
+    const emailError = !emailValue
+      ? 'Informe o seu e-mail.'
+      : email.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
+        ? 'Digite um e-mail válido, como nome@empresa.com.br.'
+        : '';
+    const senhaError = senha.value ? '' : 'Informe a sua senha.';
+    setError(email, emailError);
+    setError(senha, senhaError);
+    if (emailError) email.focus();
+    else if (senhaError) senha.focus();
+    return !emailError && !senhaError;
+  };
+
+  // O erro some assim que a pessoa volta a digitar.
+  [email, senha].forEach((input) =>
+    input?.addEventListener('input', () => {
+      if (input.getAttribute('aria-invalid') === 'true') setError(input, '');
+    }),
+  );
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (notice) notice.hidden = true;
+    if (!validate()) return;
+    // TODO(módulo login): autenticar no Supabase aqui.
+    // Na demonstração qualquer acesso válido entra no painel com dados fictícios.
+    if (form.dataset.demo) {
+      location.href = form.dataset.demo;
+      return;
+    }
+    if (notice) notice.hidden = false;
+  });
+</script>
+
+<style>
+  .client {
+    min-height: calc(100svh - var(--nav-h));
+    display: grid;
+    align-items: center;
+    padding-block: clamp(3rem, 2rem + 5vw, 6.5rem);
+    background:
+      radial-gradient(45% 55% at 82% 30%, rgb(27 128 245 / 0.14), transparent 70%),
+      radial-gradient(40% 50% at 10% 90%, rgb(8 53 155 / 0.08), transparent 70%),
+      var(--obp-mist);
+  }
+
+  /* Desktop: apresentação à esquerda, login à direita.
+     Celular: título, login e só depois os recursos, para o formulário aparecer logo de cara. */
+  .client__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+    grid-template-areas:
+      'intro login'
+      'features login';
+    column-gap: clamp(3rem, 8vw, 7.5rem);
+    row-gap: 2.75rem;
+  }
+
+  .client__intro {
+    grid-area: intro;
+    align-self: end;
+  }
+
+  .client__title {
+    margin-top: 0.75rem;
+    font-size: clamp(2.5rem, 1.5rem + 2.8vw, 3.75rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .client__title .text-gradient {
+    display: block;
+  }
+
+  .client__features {
+    grid-area: features;
+    align-self: start;
+    display: grid;
+    gap: 1.5rem;
+    max-width: 440px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .feature {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .feature__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--obp-blue);
+    box-shadow: 0 1px 2px rgb(10 22 51 / 0.06);
+  }
+
+  .feature__icon :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .feature__body {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .feature__title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .feature__text {
+    font-size: 0.9375rem;
+    line-height: 1.42;
+    color: var(--ink-2);
+  }
+
+  /* Cartão de login */
+  .login {
+    grid-area: login;
+    align-self: center;
+  }
+
+  .login__form {
+    padding: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow:
+      0 1px 2px rgb(10 22 51 / 0.04),
+      0 30px 80px -40px rgb(10 22 51 / 0.35);
+  }
+
+  .login :global(.login__logo) {
+    height: 34px;
+    width: auto;
+  }
+
+  .login__title {
+    margin-top: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  .login__subtitle {
+    margin-top: 0.375rem;
+    text-wrap: pretty;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .login__fields {
+    display: grid;
+    gap: 0.875rem;
+    margin-top: 1.75rem;
+  }
+
+  .login__fields .field-error {
+    margin-top: 0.375rem;
+    padding-left: 0.25rem;
+  }
+
+  /* Botão de mostrar senha dentro do campo */
+  .field--password input {
+    padding-right: 3.25rem;
+  }
+
+  .field--password label {
+    right: 3.25rem;
+  }
+
+  .login__reveal {
+    position: absolute;
+    top: 50%;
+    right: 0.375rem;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    color: var(--ink-3);
+    transform: translateY(-50%);
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .login__reveal:hover {
+    color: var(--ink);
+    background: var(--obp-mist);
+  }
+
+  .login__reveal :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .login__reveal[aria-pressed='true'] :global(.login__reveal-show),
+  .login__reveal[aria-pressed='false'] :global(.login__reveal-hide) {
+    display: none;
+  }
+
+  .login__forgot {
+    display: inline-block;
+    margin-top: 0.875rem;
+    font-size: 0.9375rem;
+    color: var(--obp-blue);
+  }
+
+  .login__forgot:hover,
+  .login__help a:hover,
+  .login__notice a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .login__notice {
+    display: flex;
+    gap: 0.625rem;
+    margin-top: 1.25rem;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    background: #eef4ff;
+    font-size: 0.9375rem;
+    line-height: 1.42;
+    color: var(--ink);
+  }
+
+  .login__notice[hidden] {
+    display: none;
+  }
+
+  .login__notice :global(svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 0.125rem;
+    color: var(--obp-blue);
+  }
+
+  .login__notice a {
+    color: var(--obp-blue);
+    font-weight: 500;
+  }
+
+  .login__submit {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 1.5rem;
+    justify-content: center;
+    font-size: 1.0625rem;
+  }
+
+  .login__help {
+    display: grid;
+    gap: 0.375rem;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--obp-mist);
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .login__help a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    color: var(--obp-blue);
+  }
+
+  .login__help :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  .login__secure {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 1.25rem;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .login__secure :global(svg) {
+    flex: none;
+    width: 14px;
+    height: 14px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .client__intro,
+    .login,
+    .client__features {
+      animation: client-rise 0.9s var(--ease-out) both;
+    }
+
+    .login {
+      animation-delay: 0.08s;
+    }
+
+    .client__features {
+      animation-delay: 0.16s;
+    }
+  }
+
+  @keyframes client-rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .client {
+      align-items: start;
+    }
+
+    .client__grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'intro'
+        'login'
+        'features';
+      row-gap: 2rem;
+      max-width: 560px;
+    }
+
+    .client__title {
+      font-size: clamp(2.25rem, 1.5rem + 3.6vw, 3rem);
+    }
+
+    .client__features {
+      max-width: none;
+      margin-top: 0.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .login__form {
+      border-radius: var(--radius-md);
+    }
+  }
+</style>

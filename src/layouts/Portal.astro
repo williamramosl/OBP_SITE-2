@@ -1,0 +1,262 @@
+---
+import '../styles/global.css';
+import '../styles/portal.css';
+import { Bell, ChevronLeft, FileUp, Globe, LayoutDashboard, LogOut, Menu, Plus, ReceiptText, Search, Wrench } from '@lucide/astro';
+import BaseHead from '../components/BaseHead.astro';
+import Logo from '../components/Logo.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import PortalIcones from '../components/portal/PortalIcones.astro';
+import { company } from '../data/site';
+import { demoCliente, portalDemo, portalRoutes } from '../data/portal';
+
+interface Props {
+  title: string;
+  heading: string;
+  subheading?: string;
+  active: 'painel' | 'chamados' | 'faturas' | 'boletos';
+  back?: { label: string; href: string };
+  /** Esconde o botão "Abrir chamado" da barra (ex.: na própria tela de abertura). */
+  hideCta?: boolean;
+}
+
+const { title, heading, subheading, active, back, hideCta = false } = Astro.props;
+
+const nav = [
+  { id: 'painel', label: 'Painel', href: portalRoutes.painel, icon: LayoutDashboard },
+  { id: 'chamados', label: 'Chamados', href: portalRoutes.chamados, icon: Wrench },
+  { id: 'faturas', label: 'Faturas', href: portalRoutes.faturas, icon: ReceiptText },
+  { id: 'boletos', label: 'Envio de boletos', href: portalRoutes.boletos, icon: FileUp },
+];
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <BaseHead
+      title={`${title} | Área do Cliente Office Brasil Print`}
+      description="Área do Cliente Office Brasil Print: chamados técnicos, faturas e envio de boletos."
+      noindex
+    />
+  </head>
+  <body class="portal-body">
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <div class="portal" data-portal>
+      <header class="p-mobilebar">
+        <a class="p-mobilebar__logo" href={portalRoutes.painel} aria-label="Painel da Área do Cliente">
+          <Logo />
+        </a>
+        <button class="p-menu-btn" type="button" aria-expanded="false" aria-controls="p-sidebar" data-menu-open>
+          <Menu aria-hidden="true" />
+          <span class="visually-hidden">Abrir menu</span>
+        </button>
+      </header>
+
+      <aside class="p-sidebar" id="p-sidebar" aria-label="Menu da Área do Cliente">
+        <a class="p-sidebar__logo" href={portalRoutes.painel} aria-label="Painel da Área do Cliente">
+          <Logo />
+        </a>
+
+        <nav aria-label="Área do Cliente">
+          <ul class="p-nav">
+            {nav.map((item) => (
+              <li>
+                {item.href ? (
+                  <a class="p-nav__link" href={item.href} aria-current={item.id === active ? 'page' : undefined}>
+                    <item.icon aria-hidden="true" stroke-width={1.75} />
+                    {item.label}
+                  </a>
+                ) : (
+                  <span class="p-nav__link is-disabled" aria-disabled="true">
+                    <item.icon aria-hidden="true" stroke-width={1.75} />
+                    <span class="p-nav__text">
+                      {item.label}
+                      <small>Em breve</small>
+                    </span>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <p class="p-nav__label">Atendimento</p>
+        <ul class="p-nav">
+          <li>
+            <a class="p-nav__link" href={company.whatsappHref} target="_blank" rel="noopener">
+              <SocialIcon name="whatsapp" size={20} />
+              WhatsApp
+            </a>
+          </li>
+          <li>
+            <a class="p-nav__link" href="/">
+              <Globe aria-hidden="true" stroke-width={1.75} />
+              Site Office Brasil Print
+            </a>
+          </li>
+        </ul>
+
+        <div class="p-sidebar__foot">
+          {portalDemo && <p class="p-demo">Demonstração com dados fictícios.</p>}
+          <div class="p-user">
+            <span class="p-avatar" aria-hidden="true">{demoCliente.iniciais}</span>
+            <span class="p-user__text">
+              <strong>{demoCliente.nome}</strong>
+              {demoCliente.empresa}
+            </span>
+          </div>
+          <a class="p-nav__link" href={portalRoutes.login}>
+            <LogOut aria-hidden="true" stroke-width={1.75} />
+            Sair
+          </a>
+        </div>
+      </aside>
+
+      <div class="p-backdrop" data-menu-close></div>
+
+      <main class="p-main" id="conteudo">
+        <header class="p-topbar">
+          <div>
+            {back && (
+              <a class="p-back" href={back.href}>
+                <ChevronLeft aria-hidden="true" />
+                {back.label}
+              </a>
+            )}
+            <h1 class="p-topbar__title" data-heading>{heading}</h1>
+            {subheading && <p class="p-topbar__sub" data-subheading>{subheading}</p>}
+          </div>
+
+          <div class="p-topbar__actions">
+            {!hideCta && (
+              <a class="btn btn--dark p-topbar__cta" href={portalRoutes.novoChamado}>
+                <Plus aria-hidden="true" />
+                <span class="p-topbar__cta-label">Abrir chamado</span>
+              </a>
+            )}
+            <a class="p-iconbtn" href={`${portalRoutes.chamados}#busca`} aria-label="Buscar chamados">
+              <Search aria-hidden="true" />
+            </a>
+            <div class="p-notif">
+              <button
+                class="p-iconbtn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="p-notif-panel"
+                aria-label="Atualizações dos chamados"
+                data-notif-toggle
+              >
+                <Bell aria-hidden="true" />
+                <span class="p-notif__dot" hidden data-notif-dot></span>
+              </button>
+              <div class="p-notif__panel" id="p-notif-panel" hidden data-notif-panel>
+                <p class="p-notif__title">Atualizações recentes</p>
+                <ul class="p-notif__list" data-notif-list></ul>
+                <p class="p-notif__empty" hidden data-notif-empty>Nenhuma atualização por enquanto.</p>
+              </div>
+            </div>
+            <span class="p-avatar p-topbar__avatar" title={`${demoCliente.nome} · ${demoCliente.empresa}`}>
+              {demoCliente.iniciais}
+            </span>
+          </div>
+        </header>
+
+        <slot />
+      </main>
+    </div>
+
+    <div class="p-toast" role="status" aria-live="polite"></div>
+    <PortalIcones />
+
+    <template id="tpl-notif">
+      <li>
+        <a data-link>
+          <span class="p-chip p-chip--sm" data-icone-problema></span>
+          <span class="p-notif__text">
+            <strong data-campo="titulo"></strong>
+            <span class="p-notif__msg" data-campo="mensagem"></span>
+            <small data-campo="quando"></small>
+          </span>
+        </a>
+      </li>
+    </template>
+
+    <script>
+      import { listarChamados } from '../lib/portal/chamados';
+      import { aplicarIcone, clonar, preencher } from '../lib/portal/dom';
+      import { protocolo, tempoRelativo } from '../lib/portal/formato';
+      import { problemaTitulo, portalRoutes } from '../data/portal';
+
+      // ---------- Menu em gaveta (celular e tablet) ----------
+      const portal = document.querySelector<HTMLElement>('[data-portal]');
+      const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+      const sidebar = document.getElementById('p-sidebar');
+
+      const setMenu = (open: boolean) => {
+        portal?.classList.toggle('is-menu-open', open);
+        document.documentElement.classList.toggle('p-locked', open);
+        openBtn?.setAttribute('aria-expanded', String(open));
+        if (open) sidebar?.querySelector<HTMLElement>('a, button')?.focus();
+        else openBtn?.focus({ preventScroll: true });
+      };
+
+      openBtn?.addEventListener('click', () => setMenu(true));
+      document.querySelector('[data-menu-close]')?.addEventListener('click', () => setMenu(false));
+      matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
+        if (e.matches && portal?.classList.contains('is-menu-open')) setMenu(false);
+      });
+
+      // ---------- Notificações: últimas mensagens da equipe ----------
+      const toggle = document.querySelector<HTMLButtonElement>('[data-notif-toggle]');
+      const panel = document.querySelector<HTMLElement>('[data-notif-panel]');
+
+      const setPanel = (open: boolean) => {
+        if (!panel || !toggle) return;
+        panel.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+      };
+
+      toggle?.addEventListener('click', () => setPanel(Boolean(panel?.hidden)));
+      document.addEventListener('click', (e) => {
+        if (panel && !panel.hidden && !(e.target as Element).closest('.p-notif')) setPanel(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (panel && !panel.hidden) {
+          setPanel(false);
+          toggle?.focus();
+        } else if (portal?.classList.contains('is-menu-open')) {
+          setMenu(false);
+        }
+      });
+
+      async function carregarNotificacoes() {
+        const atualizacoes = (await listarChamados())
+          .flatMap((c) => c.eventos.filter((e) => e.autor === 'equipe').map((e) => ({ chamado: c, evento: e })))
+          .sort((a, b) => b.evento.em.localeCompare(a.evento.em))
+          .slice(0, 4);
+
+        const lista = document.querySelector('[data-notif-list]');
+        for (const { chamado, evento } of atualizacoes) {
+          const item = clonar('tpl-notif');
+          item.querySelector('a')?.setAttribute('href', portalRoutes.chamado(chamado.id));
+          aplicarIcone(item, chamado.problema);
+          preencher(item, {
+            titulo: `${protocolo(chamado.id)} · ${problemaTitulo(chamado.problema)}`,
+            mensagem: evento.mensagem,
+            quando: tempoRelativo(evento.em),
+          });
+          lista?.append(item);
+        }
+
+        const vazio = document.querySelector<HTMLElement>('[data-notif-empty]');
+        if (vazio) vazio.hidden = atualizacoes.length > 0;
+        const recente = atualizacoes[0] && Date.now() - Date.parse(atualizacoes[0].evento.em) < 48 * 36e5;
+        const dot = document.querySelector<HTMLElement>('[data-notif-dot]');
+        if (dot) dot.hidden = !recente;
+      }
+
+      carregarNotificacoes();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,687 @@
+---
+import { CircleCheckBig, Inbox, Printer, Search, ShieldCheck } from '@lucide/astro';
+import Portal from '../../../../layouts/Portal.astro';
+import SocialIcon from '../../../../components/SocialIcon.astro';
+import { company } from '../../../../data/site';
+import { portalRoutes, remessaEtapas } from '../../../../data/portal';
+---
+
+<Portal
+  title="Remessa"
+  heading="Remessa"
+  subheading="Carregando…"
+  active="boletos"
+  back={{ label: 'Envio de boletos', href: portalRoutes.boletos }}
+>
+  <div class="p-banner rd-aviso" role="status" hidden data-aviso-novo data-sem-impressao>
+    <CircleCheckBig aria-hidden="true" />
+    <p><strong>Remessa enviada.</strong> Guarde o protocolo do comprovante. Você acompanha cada etapa por aqui.</p>
+  </div>
+
+  <div class="rd" hidden data-remessa>
+    <div class="rd__principal">
+      <section class="p-card rd-andamento" aria-labelledby="andamento-titulo">
+        <div class="p-card__head">
+          <h2 id="andamento-titulo" class="p-card__title">Andamento da remessa</h2>
+          <span class="status" data-status-pill></span>
+        </div>
+        <div class="rd-andamento__trilha" data-trilha-grande></div>
+        <p class="rd-andamento__nota" data-campo="nota"></p>
+
+        <ul class="contagem" aria-label="Boletos por etapa">
+          {remessaEtapas.map((e) => (
+            <li class="contagem__item" data-contagem={e.id}>
+              <strong data-campo={`conta-${e.id}`}>–</strong>
+              <span>{e.label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="p-card rd-boletos" aria-labelledby="boletos-titulo">
+        <div class="rd-boletos__head">
+          <h2 id="boletos-titulo" class="p-card__title">Boletos <span class="rd-boletos__total" data-campo="totalBoletos"></span></h2>
+          <label class="busca">
+            <Search aria-hidden="true" />
+            <span class="visually-hidden">Buscar boleto</span>
+            <input type="search" placeholder="Buscar unidade ou pagador" autocomplete="off" data-busca />
+          </label>
+        </div>
+
+        <div class="segmented rd-boletos__filtros" role="group" aria-label="Filtrar boletos" data-filtros>
+          <button type="button" data-filtro="todos" aria-pressed="true">Todos <span class="segmented__count" data-conta-filtro="todos"></span></button>
+          {remessaEtapas.map((e) => (
+            <button type="button" data-filtro={e.id} aria-pressed="false">
+              {e.label}
+              <span class="segmented__count" data-conta-filtro={e.id}></span>
+            </button>
+          ))}
+        </div>
+
+        <ul class="b-lista" data-boletos></ul>
+
+        <div class="p-empty" hidden data-sem-boletos>
+          <Inbox aria-hidden="true" />
+          <strong>Arquivo em conferência</strong>
+          <span data-campo="semBoletos"></span>
+        </div>
+        <div class="p-empty" hidden data-sem-resultado>
+          <Inbox aria-hidden="true" />
+          <strong>Nenhum boleto encontrado</strong>
+          <span>Tente outro filtro ou termo de busca.</span>
+        </div>
+      </section>
+    </div>
+
+    <aside class="rd__lateral">
+      <section class="p-card comprovante" aria-labelledby="comprovante-titulo">
+        <div class="p-card__head">
+          <h2 id="comprovante-titulo" class="p-card__title">Comprovante de envio</h2>
+          <ShieldCheck aria-hidden="true" stroke-width={1.75} />
+        </div>
+        <dl class="comprovante__lista">
+          <div><dt>Protocolo</dt><dd class="comprovante__protocolo" data-campo="protocolo"></dd></div>
+          <div><dt>Enviado em</dt><dd data-campo="enviadoEm"></dd></div>
+          <div><dt>Enviado por</dt><dd data-campo="enviadoPor"></dd></div>
+          <div><dt>Empreendimento</dt><dd data-campo="empreendimento"></dd></div>
+          <div><dt>Vencimento dos boletos</dt><dd data-campo="referencia"></dd></div>
+          <div><dt>Arquivo</dt><dd><span data-campo="arquivo"></span><span class="comprovante__muted" data-campo="tamanho"></span></dd></div>
+          <div><dt>Boletos informados</dt><dd data-campo="informados"></dd></div>
+          <div hidden data-observacao><dt>Observação</dt><dd data-campo="observacao"></dd></div>
+          <div>
+            <dt>Código de verificação (SHA-256)</dt>
+            <dd class="comprovante__hash" data-campo="hash"></dd>
+          </div>
+        </dl>
+        <button class="btn btn--outline btn--sm comprovante__imprimir" type="button" data-imprimir data-sem-impressao>
+          <Printer aria-hidden="true" />
+          Imprimir comprovante
+        </button>
+      </section>
+
+      <section class="p-card historico" aria-labelledby="historico-titulo">
+        <h2 id="historico-titulo" class="p-card__title">Histórico</h2>
+        <ol class="historico__lista" data-historico></ol>
+      </section>
+
+      <a class="p-ajuda" href={company.whatsappHref} target="_blank" rel="noopener" data-ajuda>
+        <span class="p-ajuda__icon"><SocialIcon name="whatsapp" size={20} /></span>
+        <span>
+          <strong>Dúvidas sobre esta remessa?</strong>
+          Fale com a equipe pelo WhatsApp.
+        </span>
+      </a>
+    </aside>
+  </div>
+
+  <section class="p-card p-empty nao-encontrada" hidden data-nao-encontrada>
+    <Inbox aria-hidden="true" />
+    <strong>Remessa não encontrada</strong>
+    <span>Confira o protocolo ou volte para a lista de remessas.</span>
+    <a class="btn btn--sm" href={portalRoutes.boletos}>Ver remessas</a>
+  </section>
+
+  <template id="tpl-boleto">
+    <li class="b-row">
+      <span class="b-row__main">
+        <strong data-campo="unidade"></strong>
+        <span data-campo="pagador"></span>
+      </span>
+      <span class="b-row__venc">
+        <span data-campo="vencimento"></span>
+        <span class="b-row__muted" data-campo="valor"></span>
+      </span>
+      <span class="b-row__trilha" data-trilha></span>
+      <span class="b-row__status">
+        <span class="status" data-status-pill></span>
+        <small data-campo="entregueEm"></small>
+      </span>
+    </li>
+  </template>
+
+  <template id="tpl-evento">
+    <li>
+      <span class="historico__ponto" aria-hidden="true"></span>
+      <span class="historico__texto">
+        <span data-campo="mensagem"></span>
+        <small data-campo="quando"></small>
+      </span>
+    </li>
+  </template>
+</Portal>
+
+<script>
+  import { contarBoletos, obterRemessa, type Remessa } from '../../../../lib/portal/remessas';
+  import { aplicarSelo, clonar, preencher } from '../../../../lib/portal/dom';
+  import {
+    formatarCompetencia,
+    formatarData,
+    formatarDataHora,
+    formatarDia,
+    formatarMoeda,
+    formatarNumero,
+    formatarTamanho,
+  } from '../../../../lib/portal/formato';
+  import { montarTrilha } from '../../../../lib/portal/trilha';
+  import { company } from '../../../../data/site';
+  import { remessaRotulo, type RemessaStatus } from '../../../../data/portal';
+
+  const params = new URLSearchParams(location.search);
+  const id = Number(params.get('id'));
+  const raiz = document.querySelector<HTMLElement>('[data-remessa]')!;
+
+  /** Data curta para a trilha: "05/10 às 14:32". */
+  const curta = (iso?: string) => (iso ? formatarDataHora(iso).replace(/\/\d{4}/, '') : undefined);
+
+  function nota(r: Remessa) {
+    const c = contarBoletos(r);
+    if (r.status === 'enviado') {
+      return `Recebemos o arquivo. Nossa equipe vai conferir os ${formatarNumero(r.quantidadeInformada)} boletos informados e iniciar a impressão.`;
+    }
+    if (r.status === 'processando') {
+      return `${formatarNumero(c.entregue)} de ${formatarNumero(c.total)} boletos já foram entregues. Os demais estão em impressão ou a caminho.`;
+    }
+    return `Todos os ${formatarNumero(c.total)} boletos foram entregues em ${formatarData(r.entregueEm!)}.`;
+  }
+
+  function montarBoletos(r: Remessa) {
+    const lista = raiz.querySelector('[data-boletos]')!;
+    const semBoletos = raiz.querySelector<HTMLElement>('[data-sem-boletos]')!;
+    const semResultado = raiz.querySelector<HTMLElement>('[data-sem-resultado]')!;
+    const filtros = raiz.querySelector<HTMLElement>('[data-filtros]')!;
+    const busca = raiz.querySelector<HTMLInputElement>('[data-busca]')!;
+
+    // Antes da conferência ainda não há lista de boletos.
+    if (!r.boletos.length) {
+      preencher(raiz, { semBoletos: `Os ${formatarNumero(r.quantidadeInformada)} boletos informados aparecem aqui assim que nossa equipe conferir o arquivo.` });
+      semBoletos.hidden = false;
+      filtros.hidden = true;
+      busca.closest('label')!.hidden = true;
+      return;
+    }
+
+    const botoes = [...filtros.querySelectorAll<HTMLButtonElement>('[data-filtro]')];
+    let filtro: RemessaStatus | 'todos' = 'todos';
+    const normalizar = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+    const render = () => {
+      const termo = normalizar(busca.value.trim());
+      const visiveis = r.boletos.filter(
+        (b) => (filtro === 'todos' || b.status === filtro) && (!termo || normalizar(`${b.unidade} ${b.pagador}`).includes(termo)),
+      );
+      lista.replaceChildren(
+        ...visiveis.map((b) => {
+          const item = clonar('tpl-boleto');
+          aplicarSelo(item.querySelector('[data-status-pill]'), b.status, remessaRotulo(b.status));
+          item.querySelector('[data-trilha]')?.replaceWith(montarTrilha(b.status, { compacta: true }));
+          preencher(item, {
+            unidade: b.unidade,
+            pagador: b.pagador,
+            vencimento: `Vence em ${formatarDia(b.vencimento)}`,
+            valor: formatarMoeda(b.valor),
+            entregueEm: b.entregueEm ? formatarDataHora(b.entregueEm) : '',
+          });
+          return item;
+        }),
+      );
+      semResultado.hidden = visiveis.length > 0;
+      botoes.forEach((btn) => btn.setAttribute('aria-pressed', String(btn.dataset.filtro === filtro)));
+    };
+
+    for (const botao of botoes) {
+      const alvo = botao.dataset.filtro as RemessaStatus | 'todos';
+      const total = alvo === 'todos' ? r.boletos.length : r.boletos.filter((b) => b.status === alvo).length;
+      botao.querySelector('[data-conta-filtro]')!.textContent = String(total);
+      botao.addEventListener('click', () => {
+        filtro = alvo;
+        render();
+      });
+    }
+    busca.addEventListener('input', render);
+    render();
+  }
+
+  async function iniciar() {
+    const r = Number.isInteger(id) && id > 0 ? await obterRemessa(id) : null;
+    const sub = document.querySelector('[data-subheading]');
+    if (!r) {
+      document.querySelector<HTMLElement>('[data-nao-encontrada]')!.hidden = false;
+      if (sub) sub.textContent = 'Não encontramos esta remessa.';
+      return;
+    }
+
+    document.title = `Remessa #${r.id} | Área do Cliente Office Brasil Print`;
+    document.querySelector('[data-heading]')!.textContent = `Remessa #${r.id}`;
+    if (sub) sub.textContent = `${r.empreendimento} · vencimento em ${formatarCompetencia(r.referencia).toLowerCase()}`;
+
+    const c = contarBoletos(r);
+    aplicarSelo(raiz.querySelector('.rd-andamento [data-status-pill]'), r.status, remessaRotulo(r.status));
+    raiz
+      .querySelector('[data-trilha-grande]')
+      ?.replaceChildren(montarTrilha(r.status, { datas: [curta(r.enviadoEm), curta(r.processandoEm), curta(r.entregueEm)] }));
+
+    preencher(raiz, {
+      nota: nota(r),
+      'conta-enviado': r.boletos.length ? formatarNumero(c.enviado) : '–',
+      'conta-processando': r.boletos.length ? formatarNumero(c.processando) : '–',
+      'conta-entregue': r.boletos.length ? formatarNumero(c.entregue) : '–',
+      totalBoletos: r.boletos.length ? `(${formatarNumero(r.boletos.length)})` : '',
+      protocolo: `#${r.id}`,
+      enviadoEm: formatarDataHora(r.enviadoEm),
+      enviadoPor: r.enviadoPor,
+      empreendimento: r.empreendimento,
+      referencia: formatarCompetencia(r.referencia),
+      arquivo: r.arquivo.nome,
+      tamanho: formatarTamanho(r.arquivo.tamanho),
+      informados: `${formatarNumero(r.quantidadeInformada)} boletos`,
+      observacao: r.observacao ?? '',
+      hash: r.arquivo.sha256,
+    });
+    raiz.querySelector<HTMLElement>('[data-observacao]')!.hidden = !r.observacao;
+
+    montarBoletos(r);
+
+    // Histórico: mais recente primeiro
+    raiz.querySelector('[data-historico]')?.replaceChildren(
+      ...[...r.eventos].reverse().map((ev) => {
+        const item = clonar('tpl-evento');
+        preencher(item, { mensagem: ev.mensagem, quando: formatarDataHora(ev.em) });
+        return item;
+      }),
+    );
+
+    raiz
+      .querySelector('[data-ajuda]')
+      ?.setAttribute('href', `${company.whatsappHref}?text=${encodeURIComponent(`Olá! Tenho uma dúvida sobre a remessa #${r.id} (${r.empreendimento}).`)}`);
+
+    // Imprime só o comprovante
+    raiz.querySelector('[data-imprimir]')?.addEventListener('click', () => {
+      document.documentElement.classList.add('so-comprovante');
+      window.print();
+    });
+    window.addEventListener('afterprint', () => document.documentElement.classList.remove('so-comprovante'));
+
+    raiz.hidden = false;
+
+    if (params.get('novo') === '1') {
+      document.querySelector<HTMLElement>('[data-aviso-novo]')!.hidden = false;
+      params.delete('novo');
+      history.replaceState(null, '', `${location.pathname}?${params}`);
+    }
+  }
+
+  iniciar();
+</script>
+
+<style>
+  .rd-aviso {
+    margin-bottom: 1.25rem;
+  }
+
+  .rd {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .rd[hidden],
+  .nao-encontrada[hidden] {
+    display: none;
+  }
+
+  /* minmax(0, 1fr): a coluna nunca fica mais larga que a tela por causa do conteúdo (ex.: filtros) */
+  .rd__principal,
+  .rd__lateral {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .rd__lateral {
+    position: sticky;
+    top: 1.5rem;
+    gap: 1rem;
+  }
+
+  /* Andamento */
+  .rd-andamento__trilha {
+    margin-top: 1.75rem;
+  }
+
+  .rd-andamento__nota {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    font-size: 0.875rem;
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  .contagem {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contagem__item {
+    display: grid;
+    justify-items: center;
+    gap: 0.125rem;
+    padding: 0.875rem 0.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--obp-mist);
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .contagem__item strong {
+    font-size: 1.625rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .contagem__item[data-contagem='entregue'] strong {
+    color: #157a3e;
+  }
+
+  /* Boletos */
+  .rd-boletos__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+  }
+
+  .rd-boletos__total {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .rd-boletos__filtros {
+    margin-top: 1rem;
+  }
+
+  .rd-boletos__filtros[hidden],
+  .busca[hidden] {
+    display: none;
+  }
+
+  .busca {
+    position: relative;
+    flex: 0 1 280px;
+    display: flex;
+    align-items: center;
+  }
+
+  .busca :global(svg) {
+    position: absolute;
+    left: 0.875rem;
+    width: 18px;
+    height: 18px;
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .busca input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .busca input:focus {
+    outline: none;
+    border-color: var(--obp-blue-hover);
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgb(15 71 202 / 0.15);
+  }
+
+  .b-lista {
+    margin-top: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .b-lista :global(.b-row) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 72px 150px;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .b-lista :global(.b-row + .b-row) {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .b-lista :global(.b-row__main),
+  .b-lista :global(.b-row__venc) {
+    display: grid;
+    min-width: 0;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .b-lista :global(.b-row__main strong) {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .b-lista :global(.b-row__venc) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .b-lista :global(.b-row__venc > :first-child) {
+    color: var(--ink);
+  }
+
+  .b-lista :global(.b-row__status) {
+    display: grid;
+    justify-items: end;
+    gap: 0.125rem;
+  }
+
+  .b-lista :global(.b-row__status small) {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  /* Comprovante */
+  .comprovante__lista {
+    display: grid;
+    margin-top: 0.75rem;
+  }
+
+  .comprovante__lista > div {
+    display: grid;
+    gap: 0.125rem;
+    padding-block: 0.625rem;
+  }
+
+  .comprovante__lista > div[hidden] {
+    display: none;
+  }
+
+  .comprovante__lista > div + div {
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .comprovante__lista dt {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .comprovante__lista dd {
+    display: grid;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .comprovante__protocolo {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em;
+  }
+
+  .comprovante__muted {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+
+  .comprovante__hash {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5;
+    color: var(--ink-2);
+    letter-spacing: 0;
+  }
+
+  .comprovante__imprimir {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  /* Histórico */
+  .historico__lista {
+    display: grid;
+    gap: 0.875rem;
+    margin-top: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .historico__lista :global(li) {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .historico__lista :global(li:not(:last-child)::before) {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: -0.875rem;
+    left: 4px;
+    width: 2px;
+    background: var(--obp-mist);
+  }
+
+  .historico__lista :global(.historico__ponto) {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 0.3rem;
+    border-radius: 50%;
+    background: var(--obp-blue);
+  }
+
+  .historico__lista :global(li:not(:first-child) .historico__ponto) {
+    background: #c3cde0;
+  }
+
+  .historico__lista :global(.historico__texto) {
+    display: grid;
+    font-size: 0.875rem;
+  }
+
+  .historico__lista :global(.historico__texto small) {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .nao-encontrada .btn {
+    margin-top: 0.75rem;
+  }
+
+  /* Imprimir só o comprovante */
+  @media print {
+    :global(html.so-comprovante) .rd-aviso,
+    :global(html.so-comprovante) .rd__principal,
+    :global(html.so-comprovante) .historico {
+      display: none !important;
+    }
+
+    :global(html.so-comprovante) .rd {
+      display: block;
+    }
+
+    :global(html.so-comprovante) .rd__lateral {
+      position: static;
+      max-width: 520px;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .rd {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rd__lateral {
+      position: static;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .b-lista :global(.b-row) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'main status'
+        'venc trilha';
+      gap: 0.5rem 0.75rem;
+    }
+
+    .b-lista :global(.b-row__main) {
+      grid-area: main;
+    }
+
+    .b-lista :global(.b-row__status) {
+      grid-area: status;
+    }
+
+    .b-lista :global(.b-row__venc) {
+      grid-area: venc;
+    }
+
+    .b-lista :global(.b-row__trilha),
+    .b-lista :global(.b-row .trilha) {
+      grid-area: trilha;
+      justify-self: end;
+    }
+
+    .rd-boletos__head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .busca {
+      flex-basis: auto;
+    }
+
+    .contagem__item strong {
+      font-size: 1.375rem;
+    }
+  }
+</style>

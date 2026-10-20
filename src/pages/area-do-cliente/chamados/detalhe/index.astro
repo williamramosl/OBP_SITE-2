@@ -1,0 +1,730 @@
+---
+import { CircleAlert, CircleCheckBig, Inbox, Paperclip, Printer, Send, Zap } from '@lucide/astro';
+import Portal from '../../../../layouts/Portal.astro';
+import Logo from '../../../../components/Logo.astro';
+import SocialIcon from '../../../../components/SocialIcon.astro';
+import { company } from '../../../../data/site';
+import { portalRoutes } from '../../../../data/portal';
+
+const etapas = [
+  { id: 'aberto', label: 'Aberto' },
+  { id: 'em_atendimento', label: 'Em atendimento' },
+  { id: 'resolvido', label: 'Resolvido' },
+];
+---
+
+<Portal
+  title="Chamado"
+  heading="Chamado"
+  subheading="Carregando…"
+  active="chamados"
+  back={{ label: 'Chamados', href: portalRoutes.chamados }}
+>
+  <div class="p-banner detalhe__aviso" role="status" hidden data-aviso-novo>
+    <CircleCheckBig aria-hidden="true" />
+    <p><strong>Chamado aberto com sucesso.</strong> Nossa equipe já recebeu e você acompanha tudo por aqui.</p>
+  </div>
+
+  <div class="detalhe" hidden data-detalhe>
+    <div class="detalhe__principal">
+      <section class="p-card" aria-labelledby="andamento-titulo">
+        <div class="p-card__head">
+          <h2 id="andamento-titulo" class="p-card__title">Andamento</h2>
+          <span class="status" data-status-pill></span>
+        </div>
+
+        <ol class="etapas" data-etapas>
+          {etapas.map((e) => (
+            <li class="etapa" data-etapa={e.id}>
+              <span class="etapa__ponto" aria-hidden="true"></span>
+              <span class="etapa__nome">{e.label}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="etapas__nota" hidden data-etapas-nota></p>
+      </section>
+
+      <section class="p-card" aria-labelledby="conversa-titulo">
+        <h2 id="conversa-titulo" class="p-card__title">Histórico e mensagens</h2>
+
+        <div class="descricao">
+          <p class="descricao__rotulo">Descrição do problema</p>
+          <p class="descricao__texto" data-campo="descricao"></p>
+          <ul class="anexos" data-anexos></ul>
+        </div>
+
+        <ol class="linha" data-linha></ol>
+
+        <form class="mensagem" novalidate data-mensagem>
+          <div class="field">
+            <textarea id="m-texto" name="mensagem" rows="2" maxlength="1000" placeholder=" " aria-describedby="m-erro"></textarea>
+            <label for="m-texto">Escreva uma mensagem para a equipe técnica</label>
+          </div>
+          <p class="field-error" id="m-erro" aria-live="polite"></p>
+          <div class="mensagem__acoes">
+            <button class="btn btn--dark btn--sm" type="submit">
+              <Send aria-hidden="true" />
+              Enviar mensagem
+            </button>
+          </div>
+        </form>
+        <p class="mensagem__encerrado" hidden data-encerrado>
+          Este chamado foi encerrado. Se o problema voltar, <a href={portalRoutes.novoChamado} data-reabrir>abra um novo chamado</a>.
+        </p>
+      </section>
+    </div>
+
+    <aside class="detalhe__lateral">
+      <section class="p-card info" aria-labelledby="info-titulo">
+        <div class="info__topo">
+          <span class="p-chip" data-icone-problema></span>
+          <span class="p-urgent" hidden data-urgente><Zap aria-hidden="true" />Urgente</span>
+        </div>
+        <h2 id="info-titulo" class="info__titulo" data-campo="titulo"></h2>
+        <p class="info__id" data-campo="protocolo"></p>
+
+        <dl class="info__lista">
+          <div>
+            <dt>Equipamento</dt>
+            <dd>
+              <span class="info__eq">
+                <Printer aria-hidden="true" stroke-width={1.75} />
+                <span data-campo="equipamento"></span>
+              </span>
+              <span class="info__muted" data-campo="equipamentoDetalhe"></span>
+            </dd>
+          </div>
+          <div>
+            <dt>Aberto em</dt>
+            <dd data-campo="aberto"></dd>
+          </div>
+          <div>
+            <dt>Última atualização</dt>
+            <dd data-campo="atualizado"></dd>
+          </div>
+          <div>
+            <dt>Contato no local</dt>
+            <dd>
+              <span data-campo="contato"></span>
+              <span class="info__muted" data-campo="telefone"></span>
+            </dd>
+          </div>
+        </dl>
+
+        <button class="info__cancelar" type="button" hidden data-cancelar>Cancelar chamado</button>
+        <p class="field-error" aria-live="polite" data-cancelar-erro></p>
+      </section>
+
+      <a class="p-ajuda" href={company.whatsappHref} target="_blank" rel="noopener" data-ajuda>
+        <span class="p-ajuda__icon"><SocialIcon name="whatsapp" size={20} /></span>
+        <span>
+          <strong>Precisa falar agora?</strong>
+          Chame a equipe pelo WhatsApp.
+        </span>
+      </a>
+    </aside>
+  </div>
+
+  <section class="p-card p-empty nao-encontrado" hidden data-nao-encontrado>
+    <Inbox aria-hidden="true" />
+    <strong>Chamado não encontrado</strong>
+    <span>Confira o número ou volte para a lista de chamados.</span>
+    <a class="btn btn--sm" href={portalRoutes.chamados}>Ver chamados</a>
+  </section>
+
+  <template id="tpl-evento">
+    <li class="evento">
+      <span class="evento__avatar" data-avatar></span>
+      <div class="evento__corpo">
+        <p class="evento__topo">
+          <strong data-campo="nome"></strong>
+          <span class="evento__papel" data-campo="papel"></span>
+          <time data-campo="quando"></time>
+        </p>
+        <p class="evento__status" hidden data-evento-status>
+          Status alterado para <span class="status" data-status-pill></span>
+        </p>
+        <p class="evento__texto" data-campo="mensagem"></p>
+      </div>
+    </li>
+  </template>
+
+  <template id="tpl-avatar-equipe"><Logo variant="mono" /></template>
+  <template id="tpl-anexo"><li><Paperclip aria-hidden="true" /><span data-campo="nome"></span></li></template>
+  <template id="tpl-alerta"><CircleAlert aria-hidden="true" width={14} height={14} /></template>
+</Portal>
+
+<script>
+  import { cancelarChamado, enviarMensagem, obterChamado, type Chamado } from '../../../../lib/portal/chamados';
+  import { aplicarIcone, aplicarStatus, clonar, preencher } from '../../../../lib/portal/dom';
+  import { formatarDataHora, protocolo, tempoRelativo } from '../../../../lib/portal/formato';
+  import { company } from '../../../../data/site';
+  import { demoCliente, equipamentoPorId, portalRoutes, problemaTitulo, statusInfo } from '../../../../data/portal';
+
+  const params = new URLSearchParams(location.search);
+  const id = Number(params.get('id'));
+
+  const detalhe = document.querySelector<HTMLElement>('[data-detalhe]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-mensagem]')!;
+  const texto = form.querySelector<HTMLTextAreaElement>('#m-texto')!;
+  const cancelar = document.querySelector<HTMLButtonElement>('[data-cancelar]')!;
+
+  // Em que etapa da barra de progresso cada status fica.
+  const etapaDoStatus: Record<string, number> = { aberto: 0, em_atendimento: 1, aguardando_peca: 1, resolvido: 2, cancelado: 0 };
+
+  function render(c: Chamado) {
+    const eq = equipamentoPorId(c.equipamentoId);
+    const titulo = problemaTitulo(c.problema);
+    document.title = `Chamado ${protocolo(c.id)} | Área do Cliente Office Brasil Print`;
+    preencher(detalhe, {
+      descricao: c.descricao,
+      titulo,
+      protocolo: `Chamado ${protocolo(c.id)}`,
+      equipamento: eq?.modelo ?? 'Equipamento não informado',
+      equipamentoDetalhe: eq ? `${eq.local} · Série ${eq.serie}` : '',
+      aberto: formatarDataHora(c.criadoEm),
+      atualizado: tempoRelativo(c.atualizadoEm),
+      contato: c.contatoNome,
+      telefone: c.contatoTelefone,
+    });
+    const heading = document.querySelector('[data-heading]');
+    const sub = document.querySelector('[data-subheading]');
+    if (heading) heading.textContent = `Chamado ${protocolo(c.id)}`;
+    if (sub) sub.textContent = `${titulo}${eq ? ` · ${eq.modelo}` : ''}`;
+
+    aplicarIcone(detalhe, c.problema);
+    aplicarStatus(detalhe.querySelector('.p-card__head [data-status-pill]'), c.status);
+    detalhe.querySelector<HTMLElement>('[data-urgente]')!.hidden = !c.urgente;
+
+    // Barra de etapas
+    const atual = etapaDoStatus[c.status];
+    detalhe.querySelectorAll<HTMLElement>('[data-etapa]').forEach((el, i) => {
+      el.classList.toggle('is-feita', c.status !== 'cancelado' && i < atual);
+      el.classList.toggle('is-atual', c.status !== 'cancelado' && i === atual);
+      el.classList.toggle('is-final', c.status === 'resolvido' && i === atual);
+    });
+    detalhe.querySelector('[data-etapas]')?.classList.toggle('is-cancelado', c.status === 'cancelado');
+    const nota = detalhe.querySelector<HTMLElement>('[data-etapas-nota]')!;
+    const notas: Partial<Record<Chamado['status'], string>> = {
+      aberto: 'Aguardando a equipe técnica assumir o chamado.',
+      aguardando_peca: 'A peça necessária já foi solicitada. Avisaremos quando chegar.',
+      cancelado: 'Este chamado foi cancelado.',
+    };
+    nota.textContent = notas[c.status] ?? '';
+    nota.hidden = !notas[c.status];
+
+    // Anexos
+    detalhe.querySelector('[data-anexos]')?.replaceChildren(
+      ...c.anexos.map((nome) => {
+        const li = clonar('tpl-anexo');
+        preencher(li, { nome });
+        return li;
+      }),
+    );
+
+    // Linha do tempo (mais recente embaixo, como numa conversa)
+    detalhe.querySelector('[data-linha]')?.replaceChildren(
+      ...c.eventos.map((ev) => {
+        const item = clonar('tpl-evento');
+        const avatar = item.querySelector<HTMLElement>('[data-avatar]')!;
+        if (ev.autor === 'equipe') {
+          avatar.classList.add('evento__avatar--equipe');
+          avatar.append(clonar('tpl-avatar-equipe'));
+        } else {
+          avatar.textContent = ev.nome === demoCliente.nome ? demoCliente.iniciais : ev.nome.slice(0, 2).toUpperCase();
+        }
+        preencher(item, {
+          nome: ev.nome,
+          papel: ev.autor === 'equipe' ? 'Equipe técnica' : 'Você',
+          quando: formatarDataHora(ev.em),
+          mensagem: ev.mensagem,
+        });
+        item.querySelector('time')?.setAttribute('datetime', ev.em);
+        if (ev.status && ev.status !== 'aberto') {
+          item.querySelector<HTMLElement>('[data-evento-status]')!.hidden = false;
+          aplicarStatus(item.querySelector('[data-evento-status] [data-status-pill]'), ev.status);
+        }
+        return item;
+      }),
+    );
+
+    // Ações conforme o status
+    const ativo = statusInfo[c.status].ativo;
+    form.hidden = !ativo;
+    document.querySelector<HTMLElement>('[data-encerrado]')!.hidden = ativo;
+    document.querySelector('[data-reabrir]')?.setAttribute(
+      'href',
+      c.equipamentoId ? `${portalRoutes.novoChamado}?equipamento=${c.equipamentoId}` : portalRoutes.novoChamado,
+    );
+    cancelar.hidden = c.status !== 'aberto';
+
+    const ajuda = document.querySelector('[data-ajuda]');
+    ajuda?.setAttribute('href', `${company.whatsappHref}?text=${encodeURIComponent(`Olá! Sobre o chamado ${protocolo(c.id)} (${titulo}).`)}`);
+  }
+
+  async function iniciar() {
+    const chamado = Number.isInteger(id) && id > 0 ? await obterChamado(id) : null;
+    if (!chamado) {
+      document.querySelector<HTMLElement>('[data-nao-encontrado]')!.hidden = false;
+      const sub = document.querySelector('[data-subheading]');
+      if (sub) sub.textContent = 'Não encontramos este chamado.';
+      return;
+    }
+    render(chamado);
+    detalhe.hidden = false;
+
+    if (params.get('novo') === '1') {
+      document.querySelector<HTMLElement>('[data-aviso-novo]')!.hidden = false;
+      // Tira o ?novo=1 do endereço para o aviso não voltar ao recarregar.
+      params.delete('novo');
+      history.replaceState(null, '', `${location.pathname}?${params}`);
+    }
+  }
+
+  function erroMensagem(msg: string) {
+    const out = document.getElementById('m-erro')!;
+    out.replaceChildren();
+    if (msg) out.append(clonar('tpl-alerta'), msg);
+    texto.closest('.field')?.classList.toggle('field--error', Boolean(msg));
+    texto.setAttribute('aria-invalid', String(Boolean(msg)));
+  }
+
+  texto.addEventListener('input', () => {
+    if (texto.getAttribute('aria-invalid') === 'true') erroMensagem('');
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = texto.value.trim();
+    if (!msg) {
+      erroMensagem('Escreva a mensagem antes de enviar.');
+      texto.focus();
+      return;
+    }
+    try {
+      render(await enviarMensagem(id, msg));
+      texto.value = '';
+      document.querySelector('[data-linha] > li:last-child')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } catch (err) {
+      erroMensagem(err instanceof Error ? err.message : 'Não foi possível enviar a mensagem.');
+    }
+  });
+
+  cancelar.addEventListener('click', async () => {
+    if (!confirm('Cancelar este chamado? A equipe técnica deixará de atendê-lo.')) return;
+    const erro = document.querySelector('[data-cancelar-erro]')!;
+    try {
+      render(await cancelarChamado(id));
+      erro.textContent = '';
+    } catch (err) {
+      erro.textContent = err instanceof Error ? err.message : 'Não foi possível cancelar agora.';
+    }
+  });
+
+  iniciar();
+</script>
+
+<style>
+  .detalhe__aviso {
+    margin-bottom: 1.25rem;
+  }
+
+  .detalhe {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .detalhe[hidden],
+  .nao-encontrado[hidden] {
+    display: none;
+  }
+
+  .detalhe__principal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .detalhe__lateral {
+    position: sticky;
+    top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  /* Barra de etapas */
+  .etapas {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .etapa {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.625rem;
+    text-align: center;
+  }
+
+  /* Linha que liga uma etapa à próxima */
+  .etapa:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: calc(50% + 14px);
+    right: calc(-50% + 14px);
+    height: 3px;
+    border-radius: 3px;
+    background: var(--obp-mist);
+  }
+
+  .etapa.is-feita::after {
+    background: var(--obp-blue);
+  }
+
+  .etapa__ponto {
+    width: 19px;
+    height: 19px;
+    border: 3px solid var(--obp-mist);
+    border-radius: 50%;
+    background: var(--white);
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  .etapa.is-feita .etapa__ponto {
+    border-color: var(--obp-blue);
+    background: var(--obp-blue);
+  }
+
+  .etapa.is-atual .etapa__ponto {
+    border-color: var(--obp-blue);
+    box-shadow: 0 0 0 5px rgb(15 71 202 / 0.15);
+  }
+
+  .etapa.is-final .etapa__ponto {
+    border-color: #157a3e;
+    background: #157a3e;
+    box-shadow: 0 0 0 5px rgb(21 122 62 / 0.15);
+  }
+
+  .etapa__nome {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .etapa.is-feita .etapa__nome,
+  .etapa.is-atual .etapa__nome {
+    color: var(--ink);
+  }
+
+  .etapas.is-cancelado {
+    opacity: 0.45;
+  }
+
+  .etapas__nota {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: var(--obp-mist);
+    font-size: 0.875rem;
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  /* Descrição e anexos */
+  .descricao {
+    margin-top: 1.25rem;
+    padding: 1rem 1.125rem;
+    border-radius: 16px;
+    background: var(--obp-mist);
+  }
+
+  .descricao__rotulo {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .descricao__texto {
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    white-space: pre-line;
+  }
+
+  .anexos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .anexos:not(:empty) {
+    margin-top: 0.75rem;
+  }
+
+  .anexos :global(li) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 980px;
+    background: var(--white);
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .anexos :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Linha do tempo */
+  .linha {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .linha :global(.evento) {
+    position: relative;
+    display: flex;
+    gap: 0.875rem;
+  }
+
+  /* Fio que liga as mensagens */
+  .linha :global(.evento:not(:last-child)::before) {
+    content: '';
+    position: absolute;
+    top: 44px;
+    bottom: -1.25rem;
+    left: 17px;
+    width: 2px;
+    background: var(--obp-mist);
+  }
+
+  .linha :global(.evento__avatar) {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--grad-brand);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .linha :global(.evento__avatar--equipe) {
+    background: var(--navy);
+    padding: 0 7px;
+  }
+
+  .linha :global(.evento__avatar--equipe svg) {
+    width: 100%;
+    height: auto;
+    color: var(--white);
+  }
+
+  .linha :global(.evento__corpo) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .linha :global(.evento__topo) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .linha :global(.evento__topo strong) {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .linha :global(.evento__papel) {
+    padding: 0 0.5rem;
+    border-radius: 980px;
+    background: var(--obp-mist);
+    font-size: 0.75rem;
+    color: var(--ink-2);
+  }
+
+  .linha :global(.evento__status) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .linha :global(.evento__status[hidden]) {
+    display: none;
+  }
+
+  .linha :global(.evento__texto) {
+    margin-top: 0.375rem;
+    font-size: 0.9375rem;
+    white-space: pre-line;
+  }
+
+  /* Nova mensagem */
+  .mensagem {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .mensagem[hidden] {
+    display: none;
+  }
+
+  .mensagem :global(textarea) {
+    min-height: 96px;
+  }
+
+  .mensagem .field-error {
+    margin-top: 0.5rem;
+  }
+
+  .mensagem__acoes {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+  }
+
+  .mensagem__encerrado {
+    margin-top: 1.75rem;
+    padding: 1rem 1.125rem;
+    border-radius: 14px;
+    background: var(--obp-mist);
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .mensagem__encerrado a {
+    color: var(--obp-blue);
+    font-weight: 500;
+  }
+
+  /* Cartão de informações */
+  .info__topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .info__topo .p-urgent[hidden] {
+    display: none;
+  }
+
+  .info__titulo {
+    margin-top: 1rem;
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .info__id {
+    margin-top: 0.125rem;
+    font-size: 0.875rem;
+    color: var(--ink-3);
+  }
+
+  .info__lista {
+    display: grid;
+    margin-top: 1rem;
+  }
+
+  .info__lista > div {
+    display: grid;
+    gap: 0.125rem;
+    padding-block: 0.75rem;
+    border-top: 1px solid var(--obp-mist);
+  }
+
+  .info__lista dt {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .info__lista dd {
+    display: grid;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .info__eq {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .info__eq :global(svg) {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--ink-3);
+  }
+
+  .info__muted {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+
+  .info__cancelar {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 0.5rem;
+    border-radius: 980px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #c0262d;
+    transition: background-color 0.2s ease;
+  }
+
+  .info__cancelar:hover {
+    background: #fff4f4;
+  }
+
+  .info__cancelar[hidden] {
+    display: none;
+  }
+
+  .nao-encontrado .btn {
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 1100px) {
+    .detalhe {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .detalhe__lateral {
+      position: static;
+      order: -1;
+    }
+  }
+</style>

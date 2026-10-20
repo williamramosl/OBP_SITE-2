@@ -1,0 +1,80 @@
+---
+import type { Printer } from '@lucide/astro';
+
+interface Props {
+  items: { icon: typeof Printer; title: string; text: string }[];
+  /** Cor do cartão: branco sobre fundo cinza, ou cinza sobre fundo branco */
+  surface?: 'white' | 'mist';
+}
+
+const { items, surface = 'white' } = Astro.props;
+---
+
+<ul class:list={['features', `features--${surface}`, `features--${items.length}`]}>
+  {items.map((f, i) => (
+    <li class="feature" data-reveal style={`--reveal-delay: ${(i % 4) * 0.07}s`}>
+      <f.icon class="feature__icon" aria-hidden="true" stroke-width={1.5} />
+      <h3 class="feature__title">{f.title}</h3>
+      <p class="feature__text">{f.text}</p>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .features {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .features--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .feature {
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+    border-radius: var(--radius-md);
+    background: var(--white);
+  }
+
+  .features--mist .feature {
+    background: var(--obp-mist);
+  }
+
+  .feature :global(.feature__icon) {
+    width: 36px;
+    height: 36px;
+    color: var(--obp-blue);
+  }
+
+  .feature__title {
+    margin-top: 1.5rem;
+    font-size: 1.3125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .feature__text {
+    margin-top: 0.5rem;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 1023px) {
+    .features {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .features--3 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .features {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
