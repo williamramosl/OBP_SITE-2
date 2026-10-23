@@ -13,33 +13,64 @@ const obp = 'M400 2.1C365.4 4 323.9 11.8 292 22.3C250.4 36.1 208.4 58.1 172.5 85
 const id = `selo-${Math.random().toString(36).slice(2, 8)}`;
 ---
 {variant === 'selo' ? (
-  <svg class={className} viewBox="8 0 344 318" role="img" aria-label={title} xmlns="http://www.w3.org/2000/svg">
+  <svg class={className} viewBox="-10 0 360 330" role="img" aria-label={title} xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id={`${id}-fundo`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#2b4583" />
-        <stop offset="1" stop-color="#1e3263" />
+      <!-- Quadrado azul: face lisa com uma faixa de brilho no alto. -->
+      <linearGradient id={`${id}-face`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#31497f" />
+        <stop offset="0.1" stop-color="#243a73" />
+        <stop offset="1" stop-color="#22386f" />
       </linearGradient>
-      <linearGradient id={`${id}-borda`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fff" stop-opacity="0.35" />
-        <stop offset="0.5" stop-color="#fff" stop-opacity="0.08" />
-        <stop offset="1" stop-color="#fff" stop-opacity="0.18" />
+      <!-- Reflexo na lateral direita, como luz batendo no vidro. -->
+      <linearGradient id={`${id}-lateral`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0.88" stop-color="#fff" stop-opacity="0" />
+        <stop offset="1" stop-color="#fff" stop-opacity="0.12" />
       </linearGradient>
-      <filter id={`${id}-sombra`} x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="-6" dy="7" stdDeviation="7" flood-color="#0a1633" flood-opacity="0.32" />
+      <!-- Borda de vidro: fio claro nas laterais, quase sumindo no topo e na base. -->
+      <linearGradient id={`${id}-borda`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#9db4e3" stop-opacity="0.7" />
+        <stop offset="0.12" stop-color="#9db4e3" stop-opacity="0.12" />
+        <stop offset="0.88" stop-color="#9db4e3" stop-opacity="0.12" />
+        <stop offset="1" stop-color="#9db4e3" stop-opacity="0.7" />
+      </linearGradient>
+      <!-- Quadradinho de vidro: clareia para baixo e brilha nas quinas. -->
+      <linearGradient id={`${id}-vidro`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity="0" />
+        <stop offset="1" stop-color="#fff" stop-opacity="0.1" />
+      </linearGradient>
+      <linearGradient id={`${id}-quina`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#d4e0fa" stop-opacity="0.95" />
+        <stop offset="0.28" stop-color="#d4e0fa" stop-opacity="0.12" />
+        <stop offset="0.72" stop-color="#d4e0fa" stop-opacity="0.12" />
+        <stop offset="1" stop-color="#d4e0fa" stop-opacity="0.95" />
+      </linearGradient>
+      <!-- Sombra projetada para a esquerda e para baixo, como no papel timbrado. -->
+      <filter id={`${id}-sombra`} x="-20%" y="-15%" width="140%" height="140%">
+        <feDropShadow dx="-20" dy="16" stdDeviation="5.5" flood-color="#000" flood-opacity="0.22" />
+      </filter>
+      <!-- Sombra leve das letras brancas sobre o azul. -->
+      <filter id={`${id}-relevo`} x="-10%" y="-20%" width="120%" height="150%">
+        <feDropShadow dx="-1.5" dy="2.5" stdDeviation="1.5" flood-color="#0a1633" flood-opacity="0.5" />
       </filter>
     </defs>
     <g filter={`url(#${id}-sombra)`}>
-      <rect x="28" y="5" width="270" height="258" rx="44" fill={`url(#${id}-fundo)`} />
-      <rect x="29.5" y="6.5" width="267" height="255" rx="42.5" fill="none" stroke={`url(#${id}-borda)`} stroke-width="3" />
-      <rect x="272" y="230" width="68" height="70" rx="13" fill="#0a1f5c" fill-opacity="0.78" />
-      <rect x="273.5" y="231.5" width="65" height="67" rx="11.5" fill="none" stroke={`url(#${id}-borda)`} stroke-width="3" />
+      <rect x="24.5" y="4.5" width="277" height="259" rx="46" fill={`url(#${id}-face)`} />
+      <rect x="24.5" y="4.5" width="277" height="259" rx="46" fill={`url(#${id}-lateral)`} />
+      <rect x="26" y="6" width="274" height="256" rx="44.5" fill="none" stroke={`url(#${id}-borda)`} stroke-width="3" />
+      <rect x="24.5" y="4.5" width="277" height="259" rx="46" fill="none" stroke="#14285a" stroke-opacity="0.55" />
+      <rect x="271" y="229" width="68" height="71" rx="14" fill="#02225f" fill-opacity="0.83" />
+      <rect x="271" y="229" width="68" height="71" rx="14" fill={`url(#${id}-vidro)`} />
+      <rect x="272.25" y="230.25" width="65.5" height="68.5" rx="12.75" fill="none" stroke={`url(#${id}-quina)`} stroke-width="2.5" />
+      <rect x="271" y="229" width="68" height="71" rx="14" fill="none" stroke="#14285a" stroke-opacity="0.55" />
     </g>
-    <svg x="63" y="51" width="197" height="80" viewBox="0 0 2009 816">
-      <path fill="#fff" fill-rule="evenodd" d={obp} />
-    </svg>
-    <g fill="#fff" font-family="'Inter Variable', Inter, system-ui, sans-serif" font-weight="700" text-anchor="middle">
-      <text x="163" y="158" font-size="22" textLength="170" lengthAdjust="spacingAndGlyphs">Office Brasil Print</text>
-      <text x="163" y="177" font-size="13.5" textLength="170" lengthAdjust="spacingAndGlyphs">Outsourcing de Impressão</text>
+    <g filter={`url(#${id}-relevo)`}>
+      <svg x="63" y="51" width="197" height="80" viewBox="0 0 2009 816">
+        <path fill="#fff" fill-rule="evenodd" d={obp} />
+      </svg>
+      <g fill="#fff" font-family="'Inter Variable', Inter, system-ui, sans-serif" font-weight="700" text-anchor="middle">
+        <text x="163" y="158" font-size="22" textLength="170" lengthAdjust="spacingAndGlyphs">Office Brasil Print</text>
+        <text x="163" y="177" font-size="13.5" textLength="170" lengthAdjust="spacingAndGlyphs">Outsourcing de Impressão</text>
+      </g>
     </g>
   </svg>
 ) : (
