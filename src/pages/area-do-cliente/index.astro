@@ -44,7 +44,7 @@ const accessHref = message('Olá! Sou cliente e gostaria de solicitar acesso à 
 
       <div class="login">
         <form class="login__form" novalidate data-login data-demo={portalDemo ? portalRoutes.painel : undefined}>
-          <Logo class="login__logo" />
+          <Logo variant="selo" class="login__logo" />
           <h2 class="login__title">Entrar na sua conta</h2>
           <p class="login__subtitle">Use o e-mail cadastrado pela equipe {company.name}.</p>
 
@@ -294,9 +294,12 @@ const accessHref = message('Olá! Sou cliente e gostaria de solicitar acesso à 
       0 30px 80px -40px rgb(10 22 51 / 0.35);
   }
 
+  /* O selo tem uma margem à esquerda para a sombra; o recuo negativo alinha o quadrado azul com o texto. */
   .login :global(.login__logo) {
-    height: 34px;
+    display: block;
+    height: 72px;
     width: auto;
+    margin-left: -8px;
   }
 
   .login__title {

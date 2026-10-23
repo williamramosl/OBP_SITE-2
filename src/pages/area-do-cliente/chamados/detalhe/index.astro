@@ -149,7 +149,7 @@ const etapas = [
     </li>
   </template>
 
-  <template id="tpl-avatar-equipe"><Logo variant="mono" /></template>
+  <template id="tpl-avatar-equipe"><Logo variant="selo" /></template>
   <template id="tpl-anexo"><li><Paperclip aria-hidden="true" /><span data-campo="nome"></span></li></template>
   <template id="tpl-alerta"><CircleAlert aria-hidden="true" width={14} height={14} /></template>
 </Portal>
@@ -527,15 +527,16 @@ const etapas = [
     font-weight: 600;
   }
 
+  /* Mensagens da equipe levam o selo da Office no lugar das iniciais. */
   .linha :global(.evento__avatar--equipe) {
-    background: var(--navy);
-    padding: 0 7px;
+    background: none;
+    border-radius: 0;
   }
 
+  /* 46px de altura deixam o quadrado azul do tamanho do círculo de iniciais (36px). */
   .linha :global(.evento__avatar--equipe svg) {
-    width: 100%;
-    height: auto;
-    color: var(--white);
+    width: auto;
+    height: 46px;
   }
 
   .linha :global(.evento__corpo) {

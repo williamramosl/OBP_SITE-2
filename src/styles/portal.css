@@ -31,15 +31,17 @@ html.p-locked {
   overflow-y: auto;
 }
 
+/* O selo tem uma margem à esquerda para a sombra; o recuo alinha o quadrado azul com os itens do menu. */
 .p-sidebar__logo {
   display: block;
-  width: 88px;
-  margin: 0 0 2.25rem 0.875rem;
+  width: fit-content;
+  margin: 0 0 1.75rem calc(0.875rem - 8px);
 }
 
 .p-sidebar__logo svg {
-  width: 100%;
-  height: auto;
+  display: block;
+  height: 72px;
+  width: auto;
 }
 
 .p-nav {
@@ -1244,8 +1246,9 @@ a.p-nav__link:hover {
   }
 
   .p-mobilebar__logo svg {
+    display: block;
     width: auto;
-    height: 26px;
+    height: 48px;
   }
 
   .p-menu-btn {
